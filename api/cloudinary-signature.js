@@ -30,16 +30,14 @@ module.exports = async (req, res) => {
     const allowedFolders = ['tadu/ids', 'tadu/profiles', 'tadu/ads', 'tadu/branding'];
     const folder = allowedFolders.includes(body.folder) ? body.folder : 'tadu/misc';
 
-    const timestamp = Math.round(Date.now() / 1000);
-    // Cloudinary ፈርማው የሚያሰላው ከ timestamp እና folder ላይ ብቻ ነው (ከ api_secret ጋር ተጨምሮ)
-    const paramsToSign = "folder=" + folder + "&timestamp=" + timestamp;
-    const signature = crypto
-      .createHash('sha1')
-      .update(paramsToSign + apiSecret)
-      .digest('hex');
+    const timestamp = Math.round(new Date().now() / 1000);
 
-    res.status(200).json({ timestamp, signature, apiKey, cloudName, folder });
-  } catch (err) {
-    sendError(res, err);
-  }
+// በኦብጀክት መልክ ማስቀመጥ (ቅደም ተከተሉን በራሱ ይይዛል፣ ምልክት አያስፈልገውም)
+const paramsToSign = {
+  folder: folder,
+  timestamp: timestamp
 };
+
+// ፊርማውን በcrypto ሳይሆን በcloudinary የራሱ መሣሪያ ማመንጨት
+const cloudinary = require('cloudinary').v2;
+const signature = cloudinary.utils.api_sign_request(paramsToSign, apiSecret);
