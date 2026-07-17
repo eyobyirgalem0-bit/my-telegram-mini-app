@@ -32,7 +32,7 @@ module.exports = async (req, res) => {
 
     const timestamp = Math.round(Date.now() / 1000);
     // Cloudinary ፈርማው የሚያሰላው ከ timestamp እና folder ላይ ብቻ ነው (ከ api_secret ጋር ተጨምሮ)
-    const paramsToSign = `folder=${folder}&timestamp=${timestamp}`;
+    const paramsToSign = "folder=" + folder + "&timestamp=" + timestamp;
     const signature = crypto
       .createHash('sha1')
       .update(paramsToSign + apiSecret)
