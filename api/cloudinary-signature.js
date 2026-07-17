@@ -38,6 +38,8 @@ const paramsToSign = {
   timestamp: timestamp
 };
 
-// ፊርማውን በcrypto ሳይሆን በcloudinary የራሱ መሣሪያ ማመንጨት
+// ፊርማውን በcloudinary የራሱ መሣሪያ ማመንጨት
 const cloudinary = require('cloudinary').v2;
 const signature = cloudinary.utils.api_sign_request(paramsToSign, apiSecret);
+
+res.status(200).json({ timestamp, signature, apiKey, cloudName, folder });
