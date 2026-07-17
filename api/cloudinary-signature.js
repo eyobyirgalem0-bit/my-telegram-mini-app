@@ -30,7 +30,7 @@ module.exports = async (req, res) => {
     const allowedFolders = ['tadu/ids', 'tadu/profiles', 'tadu/ads', 'tadu/branding'];
     const folder = allowedFolders.includes(body.folder) ? body.folder : 'tadu/misc';
 
-    const timestamp = Math.round(new Date().now() / 1000);
+    const timestamp = Math.round(Date.now() / 1000);
 
 // በኦብጀክት መልክ ማስቀመጥ (ቅደም ተከተሉን በራሱ ይይዛል፣ ምልክት አያስፈልገውም)
 const paramsToSign = {
