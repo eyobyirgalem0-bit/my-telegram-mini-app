@@ -1,0 +1,13 @@
+{
+  "name": "tadu-backend",
+  "version": "1.0.0",
+  "private": true,
+  "description": "ታዱ (Tadu) - Telegram Mini App backend (Vercel Serverless Functions + MongoDB + Cloudinary)",
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "mongodb": "^6.8.0",
+    "jsonwebtoken": "^9.0.2"
+  }
+}

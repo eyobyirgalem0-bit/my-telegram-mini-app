@@ -1,0 +1,7 @@
+{
+  "version": 2,
+  "cleanUrls": false,
+  "rewrites": [
+    { "source": "/admin", "destination": "/admin.html" }
+  ]
+}
