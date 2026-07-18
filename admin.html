@@ -131,7 +131,7 @@
     background: radial-gradient(circle, var(--indigo-soft) 0%, transparent 70%); z-index: 0; opacity: 0.7;
   }
   .hero > div { position: relative; z-index: 1; }
-  @media(max-width:760px){ .hero{ grid-template-columns:1fr; padding: 32px 20px; } .hero-stamp-wrap{ order: -1; } }
+  @media(max-width:760px){ .hero{ grid-template-columns:1fr; padding: 32px 20px; } .hero-stimestamp-wrap{ order: -1; } }
 
   .eyebrow{
     display:inline-flex; align-items:center; gap:8px;
@@ -161,7 +161,7 @@
   .btn-block{ width:100%; justify-content:center; }
   .btn:disabled{ opacity:.5; cursor:not-allowed; transform: none !important; box-shadow: none !important; }
 
-  .hero-stamp-wrap{ display:flex; justify-content:center; position: relative; z-index: 1; }
+  .hero-stimestamp-wrap{ display:flex; justify-content:center; position: relative; z-index: 1; }
   .hero-logo{ width:min(260px,80%); object-fit:contain; filter: drop-shadow(0 15px 35px rgba(81,26,129,0.25)); border-radius: 12px; }
 
   .stat-row{ display:flex; gap:36px; margin-top:40px; flex-wrap:wrap; border-top: 2px solid var(--line); padding-top: 30px; }
@@ -493,7 +493,7 @@
           <div class="stat"><b id="stat-categories">10</b><span data-t="stat_categories">የስራ ዘርፎች</span></div>
         </div>
       </div>
-      <div class="hero-stamp-wrap mascot-wrap">
+      <div class="hero-stimestamp-wrap mascot-wrap">
         <!-- 3D-style cartoon mascot -->
         <svg class="mascot-svg" viewBox="0 0 260 300" xmlns="http://www.w3.org/2000/svg">
           <defs>
@@ -1736,7 +1736,7 @@ async function uploadDataUrlToCloudinary(dataUrl, folder){
   const form = new FormData();
   form.append('file', blob);
   form.append('api_key', sig.apiKey);
-  form.append('timestamp', sig.timestamp);
+  form.append('timestimestamp', sig.timestimestamp);
   form.append('signature', sig.signature);
   form.append('folder', sig.folder);
   const resourceType = blob.type && blob.type.startsWith('video/') ? 'video' : 'image';
