@@ -1785,7 +1785,7 @@ async function async function updateWorkerRecord(id, patch){
     await apiFetch('/api/workers/' + id, { method: 'POST', body: JSON.stringify(patch) });
     await syncWorkersFromServer();
 }
-}
+
 async function deleteWorkerRecord(id){
   await apiFetch('/api/workers/' + id, { method: 'DELETE' });
   await syncWorkersFromServer();
