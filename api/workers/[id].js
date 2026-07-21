@@ -46,7 +46,7 @@ module.exports = async (req, res) => {
       return res.status(200).json({ success: true, worker: result });
     }
 
-    if (req.method === 'DELETE') {
+    if (req.method === 'DELETE' || req.method === 'POST') {
       const result = await col.deleteOne({ _id });
       if (result.deletedCount === 0) {
         throw Object.assign(new Error('Worker not found'), { statusCode: 404 });
