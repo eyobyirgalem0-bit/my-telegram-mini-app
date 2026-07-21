@@ -1,13 +1,6 @@
-// PUT    /api/ads/:id (admin only) -> ማስታወቂያ ማስተካከል
-// DELETE /api/ads/:id (admin only) -> ማስታወቂያ መሰረዝ
 const { ObjectId } = require('mongodb');
 const { getDb } = require('../../lib/db');
 const { requireAdmin, handlePreflight, sendError } = require('../../lib/auth');
-
-function toClient(doc) {
-  const { _id, ...rest } = doc;
-  return { id: _id.toString(), ...rest };
-}
 
 const EDITABLE_FIELDS = ['type', 'title', 'desc', 'link', 'duration', 'image', 'video'];
 
@@ -23,7 +16,7 @@ module.exports = async (req, res) => {
     const db = await getDb();
     const col = db.collection('ads');
 
-    if (req.method === 'PUT') {
+    if (req.method === 'PUT' || req.method === 'POST') {
       const body = req.body || {};
       const patch = {};
       for (const field of EDITABLE_FIELDS) {
@@ -34,20 +27,16 @@ module.exports = async (req, res) => {
       res.status(200).json(toClient(result.value));
       return;
     }
-if (req.method === 'DELETE' || req.method === 'POST') {
-  const result = await col.deleteOne({ _id });
-  if (result.deletedCount === 0) throw Object.assign(new Error('Ad not found'), { statusCode: 404 });
-  res.status(200).json({ deleted: true });
-  return;
-}
-    if (req.method === 'DELETE') {
+
+    if (req.method === 'DELETE' || req.method === 'POST') {
       const result = await col.deleteOne({ _id });
       if (result.deletedCount === 0) throw Object.assign(new Error('Ad not found'), { statusCode: 404 });
-      res.status(200).json({ id, deleted: true });
+      res.status(200).json({ deleted: true });
       return;
     }
 
-    res.status(405).json({ error: 'Method not allowed' });
+    res.setHeader('Allow', ['PUT', 'POST', 'DELETE']);
+    throw Object.assign(new Error(`Method ${req.method} Not Allowed`), { statusCode: 405 });
   } catch (err) {
     sendError(res, err);
   }
