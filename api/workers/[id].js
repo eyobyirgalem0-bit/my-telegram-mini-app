@@ -28,7 +28,7 @@ module.exports = async (req, res) => {
     const db = await getDb();
     const col = db.collection('workers');
 
-    if (req.method === 'PATCH') {
+    if (req.method === 'POST') {
       const body = req.body || {};
       const patch = {};
       for (const field of PATCHABLE_FIELDS) {
