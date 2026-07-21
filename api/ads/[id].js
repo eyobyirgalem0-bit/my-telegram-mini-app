@@ -34,7 +34,12 @@ module.exports = async (req, res) => {
       res.status(200).json(toClient(result.value));
       return;
     }
-
+if (req.method === 'DELETE' || req.method === 'POST') {
+  const result = await col.deleteOne({ _id });
+  if (result.deletedCount === 0) throw Object.assign(new Error('Ad not found'), { statusCode: 404 });
+  res.status(200).json({ deleted: true });
+  return;
+}
     if (req.method === 'DELETE') {
       const result = await col.deleteOne({ _id });
       if (result.deletedCount === 0) throw Object.assign(new Error('Ad not found'), { statusCode: 404 });
