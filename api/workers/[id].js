@@ -1,18 +1,10 @@
-// PATCH  /api/workers/:id  (admin only) -> status ማጽደቅ/መከልከል፣ ደረጃ (rating) መጨመር፣ ወይም ሌላ መስክ ማስተካከል
-// DELETE /api/workers/:id  (admin only) -> ሙሉ በሙሉ መሰረዝ
 const { ObjectId } = require('mongodb');
 const { getDb } = require('../../lib/db');
 const { requireAdmin, handlePreflight, sendError } = require('../../lib/auth');
 
-function toClient(doc) {
-  const { _id, ...rest } = doc;
-  return { id: _id.toString(), ...rest };
-}
-
-// አድሚን እንዲቀይራቸው የተፈቀዱ መስኮች ብቻ - ሌላ ማንኛውም መስክ (ለምሳሌ _id) ችላ ይባላል
 const PATCHABLE_FIELDS = [
   'status', 'ratings', 'name', 'phone', 'address', 'category',
-  'experience', 'bio', 'photo', 'idFront', 'idBack',
+  'experience', 'bio', 'photo', 'idFront', 'idBack'
 ];
 
 module.exports = async (req, res) => {
@@ -28,7 +20,7 @@ module.exports = async (req, res) => {
     const db = await getDb();
     const col = db.collection('workers');
 
-    if (req.method === 'POST') {
+    if (req.method === 'POST' || req.method === 'PATCH') {
       const body = req.body || {};
       const patch = {};
       for (const field of PATCHABLE_FIELDS) {
@@ -46,11 +38,12 @@ module.exports = async (req, res) => {
         { $set: patch },
         { returnDocument: 'after' }
       );
-      if (!result.value) {
+
+      if (!result) {
         throw Object.assign(new Error('Worker not found'), { statusCode: 404 });
       }
-      res.status(200).json(toClient(result.value));
-      return;
+
+      return res.status(200).json({ success: true, worker: result });
     }
 
     if (req.method === 'DELETE') {
@@ -58,11 +51,12 @@ module.exports = async (req, res) => {
       if (result.deletedCount === 0) {
         throw Object.assign(new Error('Worker not found'), { statusCode: 404 });
       }
-      res.status(200).json({ id, deleted: true });
-      return;
+      return res.status(200).json({ success: true });
     }
 
-    res.status(405).json({ error: 'Method not allowed' });
+    res.setHeader('Allow', ['POST', 'PATCH', 'DELETE']);
+    throw Object.assign(new Error(`Method ${req.method} Not Allowed`), { statusCode: 405 });
+
   } catch (err) {
     sendError(res, err);
   }
