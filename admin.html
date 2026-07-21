@@ -1734,11 +1734,11 @@ async function uploadDataUrlToCloudinary(dataUrl, folder){
   });
   const blob = await (await fetch(dataUrl)).blob();
   const form = new FormData();
-  form.append('file', blob);
-  form.append('api_key', sig.apiKey);
-  form.append(form.append('timestamp', sig.timestamp););
-  form.append('signature', sig.signature);
-  form.append('folder', sig.folder);
+form.append('file', blob);
+form.append('api_key', sig.apiKey);
+form.append('timestamp', sig.timestamp);
+form.append('signature', sig.signature);
+form.append('folder', sig.folder);
   const resourceType = blob.type && blob.type.startsWith('video/') ? 'video' : 'image';
   const uploadRes = await fetch(`https://api.cloudinary.com/v1_1/${sig.cloudName}/${resourceType}/upload`, {
     method: 'POST',
