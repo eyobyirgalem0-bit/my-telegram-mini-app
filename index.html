@@ -628,18 +628,7 @@
 
       <div id="reg-msg"></div>
 
-      <form id=document.getElementById('f-category').addEventListener('change', function(){
-  const wrap = document.getElementById('f-category-other-wrap');
-  const otherInput = document.getElementById('f-category-other');
-  if(this.value === 'other'){
-    wrap.style.display = '';
-    otherInput.setAttribute('required', 'required');
-  } else {
-    wrap.style.display = 'none';
-    otherInput.removeAttribute('required');
-    otherInput.value = '';
-  }
-});"reg-form">
+      <form id="reg-form">
         <div class="field">
           <label data-t="lbl_name">ሙሉ ስም</label>
           <input type="text" id="f-name" required>
