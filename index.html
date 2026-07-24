@@ -1818,10 +1818,11 @@ function starString(avg){
   const full = Math.round(avg);
   return '★★★★★'.slice(0,full) + '☆☆☆☆☆'.slice(0, 5-full);
 }
-function catLabelfunction catLabelFor(w){
-  return (w.category === 'other' && w.categoryOther) ? w.categoryOther : catLabel(w.category);
-}(id){ 
+function catLabel(id){ 
   return (CATEGORIES[currentLang].find(c=>c.id===id)||{}).label || id; 
+}
+function catLabelFor(w){
+  return (w.category === 'other' && w.categoryOther) ? w.categoryOther : catLabel(w.category);
 }
 function initials(name){ return (name||'').trim().split(' ').map(p=>p[0]).slice(0,2).join(''); }
 
