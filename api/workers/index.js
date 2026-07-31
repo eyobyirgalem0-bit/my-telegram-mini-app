@@ -1,9 +1,11 @@
 // GET  /api/workers   -> ያለ ቶክን: የጸደቁ (approved) ሰራተኞችን ብቻ ይመልሳል
 //                      -> ከ Authorization: Bearer <admin token> ጋር: ሁሉንም (pending/approved/rejected) ይመልሳል
 // POST /api/workers   -> አዲስ ተመዝጋቢ ይፈጥራል (ሁልጊዜ status: 'pending' ሆኖ ይጀምራል)
+//                      -> X-Telegram-Init-Data header ተረጋግጦ ካልታመነ ውድቅ ይደረጋል
+//                         (TELEGRAM_BOT_TOKEN ካልተዘጋጀ ግን ማረጋገጫው ይታለፋል፣ lib/telegram.js ይመልከቱ)
 const { getDb } = require('../../lib/db');
 const { requireAdmin, handlePreflight, sendError } = require('../../lib/auth');
-const { sendTelegramNotification } = require('../../lib/telegram');
+const { sendTelegramNotification, requireTelegramUser } = require('../../lib/telegram');
 
 function toClient(doc) {
   const { _id, ...rest } = doc;
@@ -31,6 +33,10 @@ module.exports = async (req, res) => {
     }
 
     if (req.method === 'POST') {
+      // ተመዝጋቢው በእውነት ከ Telegram Mini App ውስጥ እየተጠቀመ መሆኑን እናረጋግጣለን
+      // (ይህ ማንም ሰው በቀጥታ API ጠርቶ የሀሰት ተመዝጋቢ እንዳይፈጥር ይከላከላል)
+      requireTelegramUser(req);
+
       const body = req.body || {};
       const required = ['name', 'phone', 'address', 'category', 'experience'];
       for (const field of required) {
@@ -44,6 +50,9 @@ module.exports = async (req, res) => {
         phone: String(body.phone).trim(),
         address: String(body.address).trim(),
         category: String(body.category).trim(),
+        // categoryOther: ተመዝጋቢው "ሌላ" መርጦ ተጨማሪ ዝርዝር ገልጿል ካለ (ቀደም ሲል ይህ መስክ
+        // ችላ ተብሎ አልተቀመጠም ነበር፣ ስለዚህ dashboard ላይ ሁልጊዜ "ሌላ" ብቻ ይታይ ነበር)
+        categoryOther: body.categoryOther ? String(body.categoryOther).trim() : '',
         experience: String(body.experience).trim(),
         bio: body.bio ? String(body.bio).trim() : '',
         photo: body.photo || null,     // Cloudinary secure_url
