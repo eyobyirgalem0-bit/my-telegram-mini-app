@@ -1,10 +1,18 @@
+// PATCH  /api/workers/:id  (admin only) -> status ማጽደቅ/መከልከል፣ ደረጃ (rating) መጨመር፣ ወይም ሌላ መስክ ማስተካከል
+// DELETE /api/workers/:id  (admin only) -> ሙሉ በሙሉ መሰረዝ
 const { ObjectId } = require('mongodb');
 const { getDb } = require('../../lib/db');
 const { requireAdmin, handlePreflight, sendError } = require('../../lib/auth');
 
+function toClient(doc) {
+  const { _id, ...rest } = doc;
+  return { id: _id.toString(), ...rest };
+}
+
+// አድሚን እንዲቀይራቸው የተፈቀዱ መስኮች ብቻ - ሌላ ማንኛውም መስክ (ለምሳሌ _id) ችላ ይባላል
 const PATCHABLE_FIELDS = [
-  'status', 'ratings', 'name', 'phone', 'address', 'category',
-  'experience', 'bio', 'photo', 'idFront', 'idBack'
+  'status', 'ratings', 'name', 'phone', 'address', 'category', 'categoryOther',
+  'experience', 'bio', 'photo', 'idFront', 'idBack',
 ];
 
 module.exports = async (req, res) => {
@@ -20,7 +28,7 @@ module.exports = async (req, res) => {
     const db = await getDb();
     const col = db.collection('workers');
 
-    if (req.method === 'POST' || req.method === 'PATCH') {
+    if (req.method === 'PATCH') {
       const body = req.body || {};
       const patch = {};
       for (const field of PATCHABLE_FIELDS) {
@@ -38,25 +46,23 @@ module.exports = async (req, res) => {
         { $set: patch },
         { returnDocument: 'after' }
       );
-
-      if (!result) {
+      if (!result.value) {
         throw Object.assign(new Error('Worker not found'), { statusCode: 404 });
       }
-
-      return res.status(200).json({ success: true, worker: result });
+      res.status(200).json(toClient(result.value));
+      return;
     }
 
-    if (req.method === 'DELETE' || req.method === 'POST') {
+    if (req.method === 'DELETE') {
       const result = await col.deleteOne({ _id });
       if (result.deletedCount === 0) {
         throw Object.assign(new Error('Worker not found'), { statusCode: 404 });
       }
-      return res.status(200).json({ success: true });
+      res.status(200).json({ id, deleted: true });
+      return;
     }
 
-    res.setHeader('Allow', ['POST', 'PATCH', 'DELETE']);
-    throw Object.assign(new Error(`Method ${req.method} Not Allowed`), { statusCode: 405 });
-
+    res.status(405).json({ error: 'Method not allowed' });
   } catch (err) {
     sendError(res, err);
   }
