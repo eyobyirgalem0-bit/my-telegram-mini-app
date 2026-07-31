@@ -25,14 +25,6 @@ module.exports = async (req, res) => {
       );
     }
 
-    // --- TEMPORARY DEBUG LOGGING (remove once Invalid Signature issue is fixed) ---
-    console.log('DEBUG cloud_name:', cloudName);
-    console.log('DEBUG api_key:', apiKey);
-    console.log('DEBUG secret length:', apiSecret.length);
-    console.log('DEBUG secret has whitespace:', /\s/.test(apiSecret));
-    console.log('DEBUG secret first/last char codes:', apiSecret.charCodeAt(0), apiSecret.charCodeAt(apiSecret.length - 1));
-    // --- END TEMPORARY DEBUG LOGGING ---
-
     const body = req.body || {};
     // ፎልደር ስም ደህንነቱ ለተጠበቀ (whitelist) ብቻ እንዲወሰን - የዘፈቀደ path ማንም እንዳይልክ
     const allowedFolders = ['tadu/ids', 'tadu/profiles', 'tadu/ads', 'tadu/branding'];

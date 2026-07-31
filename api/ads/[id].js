@@ -29,9 +29,14 @@ module.exports = async (req, res) => {
       for (const field of EDITABLE_FIELDS) {
         if (Object.prototype.hasOwnProperty.call(body, field)) patch[field] = body[field];
       }
-      const result = await col.findOneAndUpdate({ _id }, { $set: patch }, { returnDocument: 'after' });
-      if (!result.value) throw Object.assign(new Error('Ad not found'), { statusCode: 404 });
-      res.status(200).json(toClient(result.value));
+      // MongoDB driver v6 findOneAndUpdate() ቀጥታ ሰነዱን ይመልሳል (ከ result.value ይልቅ) — ከላይ workers/[id].js ላይ እንዳለው ማብራሪያ ይመልከቱ
+      const result = await col.findOneAndUpdate(
+        { _id },
+        { $set: patch },
+        { returnDocument: 'after', includeResultMetadata: false }
+      );
+      if (!result) throw Object.assign(new Error('Ad not found'), { statusCode: 404 });
+      res.status(200).json(toClient(result));
       return;
     }
 

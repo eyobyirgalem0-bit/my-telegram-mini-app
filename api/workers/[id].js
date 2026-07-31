@@ -41,15 +41,21 @@ module.exports = async (req, res) => {
       }
       patch.updatedAt = new Date();
 
+      // ማስታወሻ፦ MongoDB Node.js driver v6 ላይ findOneAndUpdate() ነባሪ ባህሪው
+      // ተቀይሯል — ቀደም ሲል { value: doc } ተብሎ ተጠቅልሎ ይመለስ ነበር፣ አሁን ግን
+      // ሰነዱ (document) በቀጥታ ይመለሳል (ወይም ካልተገኘ null)። ይህን በግልጽ
+      // (includeResultMetadata: false) ስላላደረግነው ቀደም ሲል result.value ሁልጊዜ
+      // undefined ስለነበር፣ ማሻሻያው ትክክል ቢሆንም እንኳ ኮዱ የውሸት "Worker not found"
+      // ስህተት ይጥል ነበር (ማሻሻያው ራሱ ግን በ database ላይ ይፈጸም ነበር)።
       const result = await col.findOneAndUpdate(
         { _id },
         { $set: patch },
-        { returnDocument: 'after' }
+        { returnDocument: 'after', includeResultMetadata: false }
       );
-      if (!result.value) {
+      if (!result) {
         throw Object.assign(new Error('Worker not found'), { statusCode: 404 });
       }
-      res.status(200).json(toClient(result.value));
+      res.status(200).json(toClient(result));
       return;
     }
 

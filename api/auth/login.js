@@ -1,7 +1,7 @@
 // POST /api/auth/login
 // Body: { password: string }
 // Response: { token: string }
-const { signAdminToken, handlePreflight, sendError } = require('../../lib/auth');
+const { signAdminToken, handlePreflight, sendError, safeCompare } = require('../../lib/auth');
 
 module.exports = async (req, res) => {
   if (handlePreflight(req, res)) return;
@@ -15,7 +15,7 @@ module.exports = async (req, res) => {
     if (!ADMIN_PASSWORD) {
       throw Object.assign(new Error('Server misconfigured: ADMIN_PASSWORD is not set'), { statusCode: 500 });
     }
-    if (!password || password !== ADMIN_PASSWORD) {
+    if (!password || !safeCompare(password, ADMIN_PASSWORD)) {
       throw Object.assign(new Error('የተሳሳተ የይለፍ ቃል / Wrong password'), { statusCode: 401 });
     }
     const token = signAdminToken();
