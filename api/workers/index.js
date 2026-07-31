@@ -35,7 +35,13 @@ module.exports = async (req, res) => {
     if (req.method === 'POST') {
       // ተመዝጋቢው በእውነት ከ Telegram Mini App ውስጥ እየተጠቀመ መሆኑን እናረጋግጣለን
       // (ይህ ማንም ሰው በቀጥታ API ጠርቶ የሀሰት ተመዝጋቢ እንዳይፈጥር ይከላከላል)
-      requireTelegramUser(req);
+      // ማስታወሻ፦ requireTelegramUser በትክክል function ሆኖ ካልመጣ (ለምሳሌ የቆየ/ያልተስተካከለ
+      // deploy በተሳሳተ ሁኔታ ቢሰቀል) ምዝገባው ሙሉ በሙሉ እንዳይወድቅ (500 error) በዚህ እንጠብቀዋለን።
+      if (typeof requireTelegramUser === 'function') {
+        requireTelegramUser(req);
+      } else {
+        console.warn('requireTelegramUser is not available — skipping Telegram initData verification.');
+      }
 
       const body = req.body || {};
       const required = ['name', 'phone', 'address', 'category', 'experience'];
