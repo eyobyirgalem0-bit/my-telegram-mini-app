@@ -3193,7 +3193,7 @@ async function handleAdminAction(act, id){
       await updateWorkerRecord(id, {status:'rejected'});
       showToast(TRANSLATIONS[currentLang].msg_rejected);
     } else if(act==='editcat'){
-      const w = workers.find(x=>x.id===id);
+      const w = loadWorkers().find(x=>x.id===id);
       const current = (w && w.categoryOther) ? w.categoryOther : (w ? catLabel(w.category) : '');
       const newText = prompt('የስራ አይነት (የስራተኛው ትክክለኛ የስራ መግለጫ) ያስገቡ፦', current || '');
       if(newText === null) return; // admin cancelled
