@@ -12,8 +12,7 @@
 <style>
 
   #app-loading-screen{
-    position:fixed; top:0; bottom:0; left:50%; transform:translateX(-50%);
-    width:100%; max-width:480px; z-index:99999;
+    position:fixed; inset:0; z-index:99999;
     background:linear-gradient(160deg, var(--indigo, #511A81), var(--indigo-dark, #350F58));
     display:flex; flex-direction:column; align-items:center; justify-content:center;
     overflow:hidden;
@@ -516,7 +515,17 @@
   .admin-toolbar input[type=text]:focus{ outline:none; border-color:var(--indigo); }
   .btn-export{ background:var(--indigo-soft); color:var(--indigo); white-space:nowrap; }
   .btn-export:hover{ background:var(--indigo); color:#fff; }
-  
+
+  .admin-pagination{ display:flex; align-items:center; justify-content:center; gap:14px; margin:18px 0 8px; flex-wrap:wrap; }
+  .admin-pagination button{
+    padding:9px 16px; border-radius:999px; border:2px solid var(--line); background:var(--panel);
+    font-family:inherit; font-size:13.5px; font-weight:700; color:var(--ink); cursor:pointer;
+    box-shadow:var(--shadow-sm); transition:background .15s,color .15s,border-color .15s;
+  }
+  .admin-pagination button:hover:not(:disabled){ background:var(--indigo); color:#fff; border-color:var(--indigo); }
+  .admin-pagination button:disabled{ opacity:.4; cursor:not-allowed; }
+  .admin-pagination .page-info{ font-size:13px; font-weight:600; color:var(--ink-soft); }
+
   /* App Configuration Style */
   .config-section { margin-top: 40px; border-top: 3px double var(--line); padding-top: 30px; }
   
@@ -860,7 +869,8 @@
       </div>
 
       <div id="admin-table-wrap"></div>
-      
+      <div class="admin-pagination" id="admin-pagination"></div>
+
       <!-- ============ NEW DYNAMIC LIVE THEME CONFIGURATOR ============ -->
       <div class="panel config-section">
         <h2>🎨 የአፕ ስም እና ብራንዲንግ ቅንብር (Live App Config)</h2>
@@ -1160,6 +1170,9 @@ const TRANSLATIONS = {
     btn_delete: 'አጥፋ',
     admin_empty: 'ምንም ተመዝጋቢ በዚህ ማጣሪያ የለም።',
     admin_search_placeholder: 'በስም ወይም በስልክ ይፈልጉ...',
+    admin_page_prev: '‹ ወደኋላ',
+    admin_page_next: 'ወደፊት ›',
+    admin_page_info: 'ገጽ {page} ከ {total}',
     btn_export_csv: '⬇️ CSV አውርድ (Export)',
     admin_stat_total: 'ጠቅላላ ተመዝጋቢዎች',
     mdl_contact: 'አድራሻ እና ስልክ',
@@ -1270,6 +1283,9 @@ const TRANSLATIONS = {
     btn_delete: 'Haqi',
     admin_empty: 'Calaltuu kanaan hojjetaan galmaaye hin jiru.',
     admin_search_placeholder: 'Maqaa ykn bilbilaan barbaadi...',
+    admin_page_prev: '‹ Duubatti',
+    admin_page_next: 'Fuulduratti ›',
+    admin_page_info: 'Fuula {page} of {total}',
     btn_export_csv: '⬇️ CSV Buusi (Export)',
     admin_stat_total: 'Waliigala Galmaayan',
     mdl_contact: 'Teessoo fi Bilbila',
@@ -1380,6 +1396,9 @@ const TRANSLATIONS = {
     btn_delete: 'Delete',
     admin_empty: 'No applications found in this filter.',
     admin_search_placeholder: 'Search by name or phone...',
+    admin_page_prev: '‹ Prev',
+    admin_page_next: 'Next ›',
+    admin_page_info: 'Page {page} of {total}',
     btn_export_csv: '⬇️ Export CSV',
     admin_stat_total: 'Total Registered',
     mdl_contact: 'Contact & Address',
@@ -1490,6 +1509,9 @@ const TRANSLATIONS = {
     btn_delete: 'ደምስስ',
     admin_empty: 'ኣብዚ ምጽራይ እዚ ዋላ ሓደ ተመዝጋቢ የለን።',
     admin_search_placeholder: 'ብስም ወይ ብተሌፎን ድለዩ...',
+    admin_page_prev: '‹ ንድሕሪት',
+    admin_page_next: 'ንቕድሚት ›',
+    admin_page_info: 'ገጽ {page} ካብ {total}',
     btn_export_csv: '⬇️ CSV ኣውርድ (Export)',
     admin_stat_total: 'ጠቕላላ ተመዝገብቲ',
     mdl_contact: 'ኣድራሻን ተሌፎንን',
@@ -2079,11 +2101,23 @@ function authHeaders(){
   return adminToken ? {'Authorization': 'Bearer ' + adminToken} : {};
 }
 
+// Telegram Mini App initData — ይህ ጥሬ (raw) string ከ Telegram.WebApp.initData
+// የሚመጣ ሲሆን ተጠቃሚው በእውነት ከቴሌግራም ውስጥ እየተጠቀመ መሆኑን ለማረጋገጥ (authenticate)
+// ወደ backend በ Header (X-Telegram-Init-Data) አብሮ ይላካል። Backend ላይ
+// (api/ ውስጥ) ይህ string ከ TELEGRAM_BOT_TOKEN ጋር በ HMAC-SHA256 ተረጋግጦ
+// (Telegram's official validation algorithm) ትክክለኛ መሆኑ ካልተረጋገጠ በስተቀር
+// ጥያቄው ውድቅ (reject) መደረግ አለበት — ይህ ማረጋገጫ በ client-side ላይ ብቻ
+// መደረግ የለበትም፣ ምክንያቱም client-side code በቀላሉ ሊታለል/ሊቀየር ስለሚችል።
+function telegramAuthHeaders(){
+  return (tg && tg.initData) ? {'X-Telegram-Init-Data': tg.initData} : {};
+}
+
 async function apiFetch(path, options={}){
   const res = await fetch(API_BASE + path, {
     ...options,
     headers: {
       'Content-Type': 'application/json',
+      ...telegramAuthHeaders(),
       ...authHeaders(),
       ...(options.headers||{})
     }
@@ -2091,6 +2125,7 @@ async function apiFetch(path, options={}){
   let data = null;
   try{ data = await res.json(); }catch(e){ /* no JSON body */ }
   if(!res.ok){
+    // 401/403 ላይ initData ትክክል ካልሆነ ወይም ካልተላከ backend ላይ ውድቅ ይደረጋል
     throw new Error((data && data.error) || ('Request failed: ' + res.status));
   }
   return data;
@@ -2801,7 +2836,7 @@ function renderGrid(){
           <div class="avatar">${w.photo ? `<img class="avatar-photo" src="${w.photo}" alt="${escapeHtml(w.name)}">` : initials(w.name)}</div>
           <div>
             <div class="card-name">${escapeHtml(w.name)}</div>
-            <div class="card-role">${catLabelFor(w)}</div>
+            <div class="card-role">${escapeHtml(catLabelFor(w))}</div>
           </div>
         </div>
         ${verified ? verifiedBadgeSvg() : ''}
@@ -3093,6 +3128,8 @@ function showToast(text){
 /* ================= admin ================= */
 const ADMIN_SESSION_KEY = 'tadu_admin_token';
 let adminStatusFilter = 'all';
+let adminCurrentPage = 1;
+const ADMIN_PAGE_SIZE = 10;
 
 document.getElementById('admin-login-btn').addEventListener('click', tryAdminLogin);
 document.getElementById('admin-pass').addEventListener('keydown', e=>{
@@ -3100,6 +3137,7 @@ document.getElementById('admin-pass').addEventListener('keydown', e=>{
 });
 document.getElementById('admin-logout-btn').addEventListener('click', ()=>{
   adminToken = null;
+  adminCurrentPage = 1;
   try{ sessionStorage.removeItem(ADMIN_SESSION_KEY); }catch(e){}
   syncWorkersFromServer(); // ያለ ቶክን ስለሚሆን አሁን የጸደቁትን ብቻ ይመልሳል
   refreshAdminView();
@@ -3117,6 +3155,7 @@ async function tryAdminLogin(){
       body: JSON.stringify({ password: val })
     });
     adminToken = data.token;
+    adminCurrentPage = 1;
     try{ sessionStorage.setItem(ADMIN_SESSION_KEY, adminToken); }catch(e){}
     document.getElementById('admin-pass').value = '';
     msg.innerHTML = '';
@@ -3143,6 +3182,7 @@ function renderAdminStatusFilters() {
   adminFilterWrap.querySelectorAll('.chip').forEach(chip=>{
     chip.addEventListener('click', ()=>{
       adminStatusFilter = chip.dataset.status;
+      adminCurrentPage = 1;
       adminFilterWrap.querySelectorAll('.chip').forEach(c=> c.classList.toggle('active', c===chip));
       renderAdminTable();
     });
@@ -3198,7 +3238,10 @@ function exportWorkersCSV(){
   URL.revokeObjectURL(url);
 }
 document.getElementById('admin-export-btn').addEventListener('click', exportWorkersCSV);
-document.getElementById('admin-search').addEventListener('input', renderAdminTable);
+document.getElementById('admin-search').addEventListener('input', ()=>{
+  adminCurrentPage = 1;
+  renderAdminTable();
+});
 
 function statusLabel(s){
   return s==='approved' ? TRANSLATIONS[currentLang].status_approved : s==='rejected' ? TRANSLATIONS[currentLang].status_rejected : TRANSLATIONS[currentLang].status_pending;
@@ -3206,20 +3249,34 @@ function statusLabel(s){
 
 function renderAdminTable(){
   const wrap = document.getElementById('admin-table-wrap');
+  const pagerWrap = document.getElementById('admin-pagination');
   let workers = loadWorkers();
   if(adminStatusFilter !== 'all'){
     workers = workers.filter(w=> (w.status||'pending') === adminStatusFilter);
   }
   const q = (document.getElementById('admin-search').value||'').trim().toLowerCase();
   if(q){
-    workers = workers.filter(w=> w.name.toLowerCase().includes(q) || w.phone.toLowerCase().includes(q));
+    workers = workers.filter(w=>
+      w.name.toLowerCase().includes(q) ||
+      w.phone.toLowerCase().includes(q) ||
+      (w.address||'').toLowerCase().includes(q)
+    );
   }
-  workers = workers.slice().reverse(); 
+  workers = workers.slice().reverse();
 
   if(!workers.length){
     wrap.innerHTML = `<div class="empty">${TRANSLATIONS[currentLang].admin_empty}</div>`;
+    if(pagerWrap) pagerWrap.innerHTML = '';
     return;
   }
+
+  // ------- pagination: clamp current page, slice results -------
+  const totalItems = workers.length;
+  const totalPages = Math.max(1, Math.ceil(totalItems / ADMIN_PAGE_SIZE));
+  if(adminCurrentPage > totalPages) adminCurrentPage = totalPages;
+  if(adminCurrentPage < 1) adminCurrentPage = 1;
+  const startIdx = (adminCurrentPage - 1) * ADMIN_PAGE_SIZE;
+  const pageWorkers = workers.slice(startIdx, startIdx + ADMIN_PAGE_SIZE);
 
   wrap.innerHTML = `
     <div class="admin-table-scroll">
@@ -3233,14 +3290,14 @@ function renderAdminTable(){
         <th>${TRANSLATIONS[currentLang].admin_th_actions}</th>
       </tr></thead>
       <tbody>
-        ${workers.map(w=>`
+        ${pageWorkers.map(w=>`
           <tr>
             <td>
               <div style="display:flex;align-items:center;gap:10px;">
                 <div class="avatar" style="width:34px;height:34px;font-size:13px;flex:none;">${w.photo ? `<img class="avatar-photo" src="${w.photo}" alt="">` : initials(w.name)}</div>
                 <div>
                   <div class="admin-row-name">${escapeHtml(w.name)}</div>
-                  <div class="admin-row-sub">${catLabelFor(w)} · ${escapeHtml(w.experience)}</div>
+                  <div class="admin-row-sub">${escapeHtml(catLabelFor(w))} · ${escapeHtml(w.experience)}</div>
                 </div>
               </div>
             </td>
@@ -3282,6 +3339,34 @@ function renderAdminTable(){
 
   wrap.querySelectorAll('[data-act]').forEach(btn=>{
     btn.addEventListener('click', ()=> handleAdminAction(btn.dataset.act, btn.dataset.id));
+  });
+
+  renderAdminPagination(totalPages);
+}
+
+function renderAdminPagination(totalPages){
+  const pagerWrap = document.getElementById('admin-pagination');
+  if(!pagerWrap) return;
+  if(totalPages <= 1){ pagerWrap.innerHTML = ''; return; }
+
+  const tr = TRANSLATIONS[currentLang];
+  const infoText = (tr.admin_page_info || 'Page {page} of {total}')
+    .replace('{page}', adminCurrentPage)
+    .replace('{total}', totalPages);
+
+  pagerWrap.innerHTML = `
+    <button id="admin-page-prev" ${adminCurrentPage <= 1 ? 'disabled' : ''}>${tr.admin_page_prev || '‹ Prev'}</button>
+    <span class="page-info">${infoText}</span>
+    <button id="admin-page-next" ${adminCurrentPage >= totalPages ? 'disabled' : ''}>${tr.admin_page_next || 'Next ›'}</button>
+  `;
+
+  const prevBtn = document.getElementById('admin-page-prev');
+  const nextBtn = document.getElementById('admin-page-next');
+  if(prevBtn) prevBtn.addEventListener('click', ()=>{
+    if(adminCurrentPage > 1){ adminCurrentPage--; renderAdminTable(); }
+  });
+  if(nextBtn) nextBtn.addEventListener('click', ()=>{
+    if(adminCurrentPage < totalPages){ adminCurrentPage++; renderAdminTable(); }
   });
 }
 
