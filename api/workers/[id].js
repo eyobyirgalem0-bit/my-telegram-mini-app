@@ -11,7 +11,7 @@ function toClient(doc) {
 
 // አድሚን እንዲቀይራቸው የተፈቀዱ መስኮች ብቻ - ሌላ ማንኛውም መስክ (ለምሳሌ _id) ችላ ይባላል
 const PATCHABLE_FIELDS = [
-  'status', 'ratings', 'name', 'phone', 'address', 'category', 'categoryOther',
+  'status', 'ratings', 'name', 'phone', 'address', 'category',
   'experience', 'bio', 'photo', 'idFront', 'idBack',
 ];
 
@@ -41,21 +41,15 @@ module.exports = async (req, res) => {
       }
       patch.updatedAt = new Date();
 
-      // ማስታወሻ፦ MongoDB Node.js driver v6 ላይ findOneAndUpdate() ነባሪ ባህሪው
-      // ተቀይሯል — ቀደም ሲል { value: doc } ተብሎ ተጠቅልሎ ይመለስ ነበር፣ አሁን ግን
-      // ሰነዱ (document) በቀጥታ ይመለሳል (ወይም ካልተገኘ null)። ይህን በግልጽ
-      // (includeResultMetadata: false) ስላላደረግነው ቀደም ሲል result.value ሁልጊዜ
-      // undefined ስለነበር፣ ማሻሻያው ትክክል ቢሆንም እንኳ ኮዱ የውሸት "Worker not found"
-      // ስህተት ይጥል ነበር (ማሻሻያው ራሱ ግን በ database ላይ ይፈጸም ነበር)።
       const result = await col.findOneAndUpdate(
         { _id },
         { $set: patch },
-        { returnDocument: 'after', includeResultMetadata: false }
+        { returnDocument: 'after' }
       );
-      if (!result) {
+      if (!result.value) {
         throw Object.assign(new Error('Worker not found'), { statusCode: 404 });
       }
-      res.status(200).json(toClient(result));
+      res.status(200).json(toClient(result.value));
       return;
     }
 
