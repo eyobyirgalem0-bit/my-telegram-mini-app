@@ -500,7 +500,7 @@
     <div class="hero">
       <div>
         <h1 id="hero-title">ጥገና ወይም ሰራተኛ ሲያስፈልግዎ፣ <em>ቀልጣፋና ብቃት ያለው</em> ሰው ብቻ ይጥሩ።</h1>
-        <p class="lede" id="hero-lede-text" data-t="hero_lede">ታዱ ስራ ፈላጊዎችን የሙሉ መረጃቸውን፣ የስራ ልምዳቸውን እና መታወቂያቸውን አረጋግጦ ከቀጣሪዎች ጋር ያገናኛል። ከዚህ በፊት የቀጠሯቸው ሰዎች የሰጡትን ደረጃ (ሬቲንግ) አይተው በእርግጠኝነት ይምረጡ።</p>
+        <p class="lede" id="hero-lede-text" data-t="hero_lede">ታዱ ስራ ፈላጊዎችን የሙሉ መረጃቸውን፣ የስራ ልምዳቸውን እና መታወቂያቸውን አረጋግጦ ከቀጣሪዎች ጋር ��ገናኛል። ከዚህ በፊት የቀጠሯቸው ሰዎች የሰጡትን ደረጃ (ሬቲንግ) አይተው በእርግጠኝነት ይምረጡ።</p>
         <div class="hero-actions">
           <button class="btn btn-primary" data-view="browse" data-t="btn_find_worker">ሰራተኛ ፈልግ →</button>
           <button class="btn btn-outline" data-view="register" data-t="btn_register_as">እንደ ሰራተኛ ተመዝገብ</button>
@@ -862,7 +862,7 @@
           <p class="hint" style="margin-top:6px;">ማሳሰቢያ፦ ቪዲዮው ካለቀ በኋላ ብቻ ነው ዝጋ (✕) ምልክቱ የሚታየው። ትልቅ ቪዲዮ ፋይል ማስቀመጫ ቦታ ላይ ላይሳካ ስለሚችል በተቻለ መጠን አጭርና ትንሽ ቪዲዮ ይጠቀሙ።</p>
         </div>
 
-        <button class="btn btn-primary btn-sm" id="ad-add-btn">➕ ማስታወቂያ ጨምር</button>
+        <button class="btn btn-primary btn-sm" id="ad-add-btn">➕ ማስታወቂያ ��ምር</button>
 
         <div class="ads-admin-list" id="ads-admin-list"></div>
       </div>
@@ -1335,7 +1335,7 @@ const TRANSLATIONS = {
     hero_lede: 'ታዱ ስራሕ ደለይቲ ምሉእ ሓበሬታኦም፣ ተመክሮ ስራሖምን መንነቶምን ኣረጋጊጹ ምስ ኣስራሕቲ የራኽብ። ቅድሚ ሕጂ ዝቖጸርዎም ሰባት ዝሃብዎም ደረጃ ርኢኹም ብምትእምማን ምረጹ።',
     btn_find_worker: 'ሰራሕተኛ ድለ →',
     btn_register_as: 'ከም ሰራሕተኛ ተመዝገብ',
-    stat_registered: 'ዝተመዝገቡ ሰራሕተኛታት',
+    stat_registered: 'ዝተመዝገቡ ሰራሕተኛ���ት',
     stat_verified: 'ዝተረጋገጸ መንነት ዘለዎም',
     stat_categories: 'ዓይነት ስራሕቲ',
     cat_title: 'ታዱ ዘጠቓልሎም ዓይነት ስራሕቲ',
@@ -2004,20 +2004,32 @@ function telegramAuthHeaders(){
 }
 
 async function apiFetch(path, options={}){
-  const res = await fetch(API_BASE + path, {
-    ...options,
-    headers: {
-      'Content-Type': 'application/json',
-      ...telegramAuthHeaders(),
-      ...authHeaders(),
-      ...(options.headers||{})
-    }
-  });
+  let res;
+  try{
+    res = await fetch(API_BASE + path, {
+      ...options,
+      headers: {
+        'Content-Type': 'application/json',
+        ...telegramAuthHeaders(),
+        ...authHeaders(),
+        ...(options.headers||{})
+      }
+    });
+  }catch(networkErr){
+    // ኢንተርኔት ከጠፋ ወይም CORS ከታገደ — ይህ የይለፍ ቃል ስህተት አይደለም
+    const err = new Error('የኔትወርክ ችግር / Network error: ' + (networkErr.message||'fetch failed'));
+    err.status = 0;
+    throw err;
+  }
   let data = null;
   try{ data = await res.json(); }catch(e){ /* no JSON body */ }
   if(!res.ok){
     // 401/403 ላይ initData ትክክል ካልሆነ ወይም ካልተላከ backend ላይ ውድቅ ይደረጋል
-    throw new Error((data && data.error) || ('Request failed: ' + res.status));
+    const err = new Error((data && data.error) || ('Request failed: ' + res.status));
+    // የ HTTP status code ን አብረን እናስቀምጣለን፣ ስለዚህ ጠሪው 401 (የተሳሳተ የይለፍ ቃል) ን
+    // ከ 500 (server/env ችግር) ወይም 404 (API አልተገኘም) ለይቶ ማሳየት ይችላል።
+    err.status = res.status;
+    throw err;
   }
   return data;
 }
@@ -3039,12 +3051,24 @@ async function tryAdminLogin(){
   const val = document.getElementById('admin-pass').value;
   const msg = document.getElementById('admin-login-msg');
   const loginBtn = document.getElementById('admin-login-btn');
+  const tr = TRANSLATIONS[currentLang];
+  // ባዶ የይለፍ ቃል ወደ ሰርቨር መላክ አያስፈልግም
+  if(!val || !val.trim()){
+    msg.innerHTML = `<div class="form-msg err">${tr.msg_fill_all}</div>`;
+    return;
+  }
   loginBtn.disabled = true;
+  msg.innerHTML = '';
   try{
     const data = await apiFetch('/api/auth/login', {
       method: 'POST',
       body: JSON.stringify({ password: val })
     });
+    if(!data || !data.token){
+      const e = new Error('Server did not return a token');
+      e.status = 500;
+      throw e;
+    }
     adminToken = data.token;
     adminCurrentPage = 1;
     try{ sessionStorage.setItem(ADMIN_SESSION_KEY, adminToken); }catch(e){}
@@ -3053,7 +3077,14 @@ async function tryAdminLogin(){
     await syncWorkersFromServer(); // ቶክኑ ስላለ አሁን ሁሉንም (pending/rejected ጨምሮ) ይመልሳል
     refreshAdminView();
   } catch (e) {
-    msg.innerHTML = `<div class="form-msg err">${TRANSLATIONS[currentLang].msg_wrong_pass}</div>`;
+    // ከዚህ በፊት ማንኛውም ስህተት (500 server error, 404, network) "የተሳሳተ የይለፍ ቃል"
+    // ተብሎ ይታይ ነበር። ይህ እውነተኛውን ችግር ደብቆ ስለነበር ትክክለኛው መልእክት አሁን ይታያል።
+    const isWrongPass = e.status === 401;
+    const detail = escapeHtml(e.message || 'Unknown error');
+    msg.innerHTML = isWrongPass
+      ? `<div class="form-msg err">${tr.msg_wrong_pass}</div>`
+      : `<div class="form-msg err">⚠️ ${detail}${e.status ? ' (HTTP ' + e.status + ')' : ''}</div>`;
+    if(!isWrongPass) console.error('[admin-login]', e);
   } finally {
     loginBtn.disabled = false;
   }
