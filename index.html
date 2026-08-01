@@ -912,7 +912,7 @@
       <!-- ============ ADS MANAGER (Pop-up ማስታወቂያ ማከል) ============ -->
       <div class="panel config-section">
         <h2>📢 Pop-up ማስታወቂያ</h2>
-        <p class="hint">እዚህ የምትጨምሩት ማስታወቂያ ተጠቃሚ አፑን ሲከፍት እንደ pop-up ብቅ ይላል፣ ማስታወቂያው እስኪያልቅ ድረስ ምንም ነገር መንካት አይቻልም። ተጠቃሚ ማስ��ወቂያውን ሲነካ ወደ ሊንኩ ይወሰዳል (ሊንክ ከሌለ ምንም አይሆንም)።</p>
+        <p class="hint">እዚህ የምትጨምሩት ማስታወቂያ ተጠቃሚ አፑን ሲከፍት እንደ pop-up ብቅ ይላል፣ ማስታወቂያው እስኪያልቅ ድረስ ምንም ነገር መንካት አይቻልም። ተጠቃሚ ማስ  ወቂያውን ሲነካ ወደ ሊንኩ ይወሰዳል (ሊንክ ከሌለ ምንም አይሆንም)።</p>
 
         <div class="field" style="margin-bottom:16px;">
           <label>የማስታወቂያ አይነት (Ad Type)</label>
@@ -1173,7 +1173,7 @@ const TRANSLATIONS = {
     mdl_about: 'ስለ ስራው',
     btn_call: '📞 ደውሉ / ይቅጠሩ',
     mdl_rate: 'ደረጃ ይስጡ',
-    mdl_id_docs: '🔒 የመታ���ቂያ ፎቶ (ለአስተዳዳሪ ብቻ)',
+    mdl_id_docs: '🔒 የመታ   ቂያ ፎቶ (ለአስተዳዳሪ ብቻ)',
     mdl_rate_admin_only: '🔒 ደረጃ መስጠት የሚችለው አስተዳዳሪ ብቻ ነው።',
     msg_already_rated: '✅ ለዚህ ሰራተኛ አስቀድመው ደረጃ ሰጥተዋል። እያንዳንዱ ሰው ለአንድ ሰራተኛ አንድ ጊዜ ብቻ ደረጃ መስጠት ይችላል።',
     m_id_none_text: 'ምንም የመታወቂያ ፎቶ አልተሰቀለም።',
@@ -1193,7 +1193,7 @@ const TRANSLATIONS = {
     msg_deleted: 'ተመዝጋቢው ተሰርዟል',
     msg_approved: 'ጸድቋል ✅',
     msg_rejected: 'ተከልክሏል ❌',
-    msg_logged_out: 'ወጥ���ዋል',
+    msg_logged_out: 'ወጥ   ዋል',
     no_id_uploaded: 'አልተሰቀለም',
     footer_text: '© 2026 ታዱ (Tadu) - ታዱ — ስራ እና ሰራተኛ ማገናኛ።',
     info_modal_title: 'ስለ ታዱ',
@@ -1451,7 +1451,7 @@ const TRANSLATIONS = {
     search_placeholder: 'ስም ወይ ከባቢ ድለዩ (ንኣብነት፡ ኣበበ, ቦሌ...)',
     sort_rating: 'ደረጃ (ላዕለዋይ ቅድም)',
     sort_name: 'ስም (ብፊደል ተራ)',
-    exp_any: 'ዝኾነ ተመክሮ', exp_junior: '0–2 ��መት ተመክሮ', exp_mid: '3–5 ዓመት ተመክሮ', exp_senior: '6+ ዓመት ተመክሮ',
+    exp_any: 'ዝኾነ ተመክሮ', exp_junior: '0–2   መት ተመክሮ', exp_mid: '3–5 ዓመት ተመክሮ', exp_senior: '6+ ዓመት ተመክሮ',
     all: 'ኩሉ',
     experience_label: 'ተመክሮ',
     new_worker: 'ሓድሽ',
@@ -1620,7 +1620,7 @@ const CATEGORIES = {
     {id:'road_construction_worker', group:'g1', label:'የመንገድ ግንባታ ሰራተኛ'},
     {id:'site_supervisor', group:'g1', label:'የግንባታ ቦታ ተቆጣጣሪ'},
     {id:'housemaid', group:'g2', label:'የቤት ሰራተኛ / ሞግዚት'},
-    {id:'cleaner', group:'g2', label:'የቤ��� ጽዳት ሰራተኛ'},
+    {id:'cleaner', group:'g2', label:'የቤ    ጽዳት ሰራተኛ'},
     {id:'laundry', group:'g2', label:'ልብስ አጣቢና ተኳሽ'},
     {id:'office_cleaner', group:'g2', label:'የቢሮ ጽዳት ሰራተኛ'},
     {id:'window_cleaner', group:'g2', label:'የህንጻና መስታወት አጣቢ'},
@@ -3075,6 +3075,7 @@ document.querySelectorAll('#m-star-picker span').forEach(starEl=>{
 });
 
 document.getElementById('m-rate-submit').addEventListener('click', async ()=>{
+  const submitBtn = document.getElementById('m-rate-submit');
   if(hasRatedWorker(currentWorkerId)){
     showToast(TRANSLATIONS[currentLang].msg_already_rated);
     openModal(currentWorkerId);
@@ -3084,17 +3085,35 @@ document.getElementById('m-rate-submit').addEventListener('click', async ()=>{
     showToast(TRANSLATIONS[currentLang].msg_select_star);
     return;
   }
-  const w = loadWorkers().find(x=>x.id===currentWorkerId);
-  if(!w) return;
-  const by = document.getElementById('m-rate-by').value.trim() || TRANSLATIONS[currentLang].client_label;
-  const comment = document.getElementById('m-rate-comment').value.trim();
-  const ratings = (w.ratings || []).slice();
-  ratings.push({ v: selectedStarRating, c: comment, by });
-  await updateWorkerRecord(w.id, { ratings });
-  markWorkerRated(w.id);
-  showToast('✅ ደረጃ ተመዝግቧል');
-  openModal(w.id);
-  refreshWhateverIsVisible();
+  if(submitBtn.disabled) return; // ድጋሚ ጠቅ ማድረግን ለመከላከል (avoid double-submit)
+  submitBtn.disabled = true;
+  try{
+    let w = loadWorkers().find(x=>x.id===currentWorkerId);
+    if(!w){
+      // Cache ውስጥ ካልተገኘ ከ server እንደገና ለማምጣት ሙከራ ያድርጉ
+      // (worker not found in local cache — re-sync from server before giving up)
+      await syncWorkersFromServer();
+      w = loadWorkers().find(x=>x.id===currentWorkerId);
+    }
+    if(!w){
+      showToast('⚠️ ሰራተኛው አልተገኘም፣ እባክዎ ገጹን እንደገና ይጫኑት (reload)።');
+      return;
+    }
+    const by = document.getElementById('m-rate-by').value.trim() || TRANSLATIONS[currentLang].client_label;
+    const comment = document.getElementById('m-rate-comment').value.trim();
+    const ratings = (w.ratings || []).slice();
+    ratings.push({ v: selectedStarRating, c: comment, by });
+    await updateWorkerRecord(w.id, { ratings });
+    markWorkerRated(w.id);
+    showToast('✅ ደረጃ ተመዝግቧል');
+    openModal(w.id);
+    refreshWhateverIsVisible();
+  }catch(err){
+    console.error('Rating submit failed:', err);
+    showToast('⚠️ ደረጃ መስጠት አልተሳካም፣ እባክዎ እንደገና ይሞክሩ። (' + (err && err.message ? err.message : 'unknown error') + ')');
+  }finally{
+    submitBtn.disabled = false;
+  }
 });
 
 /* ================= misc ================= */
