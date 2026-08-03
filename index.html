@@ -783,6 +783,21 @@
         </div>
 
         <div class="field">
+          <label data-t="lbl_education">የትምህርት ደረጃ</label>
+          <select id="f-education">
+            <option value="none" data-t="edu_none">የለም / መደበኛ ትምህርት አልተከታተልኩም</option>
+            <option value="primary" data-t="edu_primary">አንደኛ ደረጃ (1-8ኛ ክፍል)</option>
+            <option value="secondary" data-t="edu_secondary">ሁለተኛ ደረጃ (9-12ኛ ክፍል)</option>
+            <option value="tvet" data-t="edu_tvet">የቴክኒክና ሙያ ስልጠና (TVET)</option>
+            <option value="diploma" data-t="edu_diploma">ዲፕሎማ</option>
+            <option value="bachelor" data-t="edu_bachelor">የመጀመሪያ ዲግሪ (BA/BSc)</option>
+            <option value="masters" data-t="edu_masters">ማስተርስ ዲግሪ (MA/MSc)</option>
+            <option value="phd" data-t="edu_phd">ዶክትሬት (PhD)</option>
+            <option value="other" data-t="edu_other">ሌላ</option>
+          </select>
+        </div>
+
+        <div class="field">
           <label><span data-t="lbl_bio">ስለ ስራዎ አጭር መግለጫ</span><span class="sub" data-t="lbl_bio_sub">ምን አይነት ስራዎችን በደንብ እንደሚሰሩ ይግለጹ</span></label>
           <textarea id="f-bio"></textarea>
         </div>
@@ -797,6 +812,16 @@
             </div>
             <div class="u-label"><span data-t="lbl_photo_add">ፎቶ ይጨምሩ</span> ➕</div>
             <div class="u-sub" data-t="lbl_photo_hint">ፊትዎ በግልጽ የሚታይበት ፎቶ ይሰቅሉ</div>
+          </label>
+        </div>
+
+        <div class="field">
+          <label data-t="lbl_cv">CV ወይም ፖርትፎሊዮ (አማራጭ)</label>
+          <label class="uploader" id="up-cv">
+            <input type="file" accept=".pdf,.doc,.docx,image/*" id="f-cv">
+            <div class="u-label"><span data-t="lbl_cv_add">ፋይል ይጫኑ</span> ➕</div>
+            <div class="u-sub" data-t="lbl_cv_hint">PDF፣ Word ወይም ምስል (ከ5MB በታች)</div>
+            <div id="cv-filename" style="display:none; margin-top:8px; font-weight:700; color:var(--indigo);"></div>
           </label>
         </div>
 
@@ -1005,6 +1030,16 @@
       <p id="m-bio" style="margin:0;font-size:14px;line-height:1.6;"></p>
     </div>
 
+    <div class="modal-section" id="m-education-wrap" style="display:none;">
+      <h4 data-t="lbl_education">የትምህርት ደረጃ</h4>
+      <p id="m-education" style="margin:0;font-size:14px;"></p>
+    </div>
+
+    <div class="modal-section" id="m-cv-wrap" style="display:none;">
+      <h4 data-t="lbl_cv">CV ወይም ፖርትፎሊዮ</h4>
+      <a id="m-cv-link" href="#" target="_blank" rel="noopener" class="btn btn-ghost btn-sm" data-t="btn_view_cv">📄 ፋይሉን ይመልከቱ</a>
+    </div>
+
     <div class="modal-section" id="m-actions">
       <a class="btn btn-amber btn-block" id="m-call" href="#" data-t="btn_call">📞 ደውሉ / ይቅጠሩ</a>
     </div>
@@ -1127,11 +1162,25 @@ const TRANSLATIONS = {
     lbl_category: 'ሊሰሩት የሚችሉት ስራ አይነት',
     lbl_category_other: 'የስራ አይነት ይግለጹ (ሌላ ከሆነ)',
     lbl_experience: 'የስራ ልምድ (ዓመት)',
+    lbl_education: 'የትምህርት ደረጃ',
+    edu_none: 'የለም / መደበኛ ትምህርት አልተከታተልኩም',
+    edu_primary: 'አንደኛ ደረጃ (1-8ኛ ክፍል)',
+    edu_secondary: 'ሁለተኛ ደረጃ (9-12ኛ ክፍል)',
+    edu_tvet: 'የቴክኒክና ሙያ ስልጠና (TVET)',
+    edu_diploma: 'ዲፕሎማ',
+    edu_bachelor: 'የመጀመሪያ ዲግሪ (BA/BSc)',
+    edu_masters: 'ማስተርስ ዲግሪ (MA/MSc)',
+    edu_phd: 'ዶክትሬት (PhD)',
+    edu_other: 'ሌላ',
     lbl_bio: 'ስለ ስራዎ አጭር መግለጫ',
     lbl_bio_sub: 'ምን አይነት ስራዎችን በደንብ እንደሚሰሩ ይግለጹ',
     lbl_photo: 'የፕሮፋይል ፎቶ',
     lbl_photo_add: 'ፎቶ ይጨምሩ',
     lbl_photo_hint: 'ፊትዎ በግልጽ የሚታይበት ፎቶ ይሰቅሉ',
+    lbl_cv: 'CV ወይም ፖርትፎሊዮ (አማራጭ)',
+    lbl_cv_add: 'ፋይል ይጫኑ',
+    lbl_cv_hint: 'PDF፣ Word ወይም ምስል (ከ5MB በታች)',
+    btn_view_cv: '📄 ፋይሉን ይመልከቱ',
     lbl_id: 'የመታወቂያ ፎቶ (ብሄራዊ መታወቂያ ወይም የቀበሌ መታወቂያ)',
     lbl_id_front: 'የፊት ገጽ',
     lbl_id_back: 'የጀርባ ገጽ',
@@ -1240,11 +1289,25 @@ const TRANSLATIONS = {
     lbl_category: 'Gosa Hojii Hojjechuu Dandeessan',
     lbl_category_other: "Gosa hojii kee ibsi (yoo kan biraa ta'e)",
     lbl_experience: 'Muuxannoo Hojii (Waggaa)',
+    lbl_education: 'Sadarkaa Barnootaa',
+    edu_none: 'Hin jiru / Barnoota idileessaa hin baranne',
+    edu_primary: 'Sadarkaa Tokkoffaa (Kutaa 1-8)',
+    edu_secondary: 'Sadarkaa Lammaffaa (Kutaa 9-12)',
+    edu_tvet: 'Leenjii Ogummaa fi Teeknikaa (TVET)',
+    edu_diploma: 'Diippilomaa',
+    edu_bachelor: 'Digrii Jalqabaa (BA/BSc)',
+    edu_masters: 'Digrii Maastarsii (MA/MSc)',
+    edu_phd: 'Digrii Doktoreetii (PhD)',
+    edu_other: 'Kan biraa',
     lbl_bio: 'Ibsa Gabaabaa Hojii Keessanii',
     lbl_bio_sub: 'Hojiiwwan akkamii akka gaariitti akka hojjettan ibsa',
     lbl_photo: 'Suura Piroofaayilii',
     lbl_photo_add: 'Suura Dabali',
     lbl_photo_hint: 'Suura fuulli keessan ifatti mul’atu fe’aa',
+    lbl_cv: 'CV ykn Poortifooliyoo (Filannoo)',
+    lbl_cv_add: 'Faayilii Fe’i',
+    lbl_cv_hint: 'PDF, Word ykn Suura (5MB gadi)',
+    btn_view_cv: '📄 Faayilii Ilaali',
     lbl_id: 'Fakkii Waraqaa Eenyummaa (Biyoolessaa ykn Gandaa)',
     lbl_id_front: 'Fuula Duraa',
     lbl_id_back: 'Fuula Duubaa',
@@ -1353,11 +1416,25 @@ const TRANSLATIONS = {
     lbl_category: 'Your Work Category',
     lbl_category_other: 'Please specify your work type',
     lbl_experience: 'Work Experience (Years)',
+    lbl_education: 'Education Level',
+    edu_none: 'None / No formal education',
+    edu_primary: 'Primary School (Grades 1-8)',
+    edu_secondary: 'Secondary School (Grades 9-12)',
+    edu_tvet: 'Technical & Vocational Training (TVET)',
+    edu_diploma: 'Diploma',
+    edu_bachelor: "Bachelor's Degree (BA/BSc)",
+    edu_masters: "Master's Degree (MA/MSc)",
+    edu_phd: 'PhD',
+    edu_other: 'Other',
     lbl_bio: 'Short Work Bio',
     lbl_bio_sub: 'Describe what kind of services you provide best',
     lbl_photo: 'Profile Photo',
     lbl_photo_add: 'Add photo',
     lbl_photo_hint: 'Upload a photo that clearly shows your face',
+    lbl_cv: 'CV or Portfolio (optional)',
+    lbl_cv_add: 'Upload file',
+    lbl_cv_hint: 'PDF, Word, or image (under 5MB)',
+    btn_view_cv: '📄 View File',
     lbl_id: 'ID Photo (National or Kebele ID)',
     lbl_id_front: 'Front Side',
     lbl_id_back: 'Back Side',
@@ -1466,11 +1543,25 @@ const TRANSLATIONS = {
     lbl_category: 'ክትሰርሕዎ እትኽእሉ ዓይነት ስራሕ',
     lbl_category_other: 'ዓይነት ስራሕ ግለጹ (እንተ ካልእ ኮይኑ)',
     lbl_experience: 'ተመክሮ ስራሕ (ዓመት)',
+    lbl_education: 'ደረጃ ትምህርቲ',
+    edu_none: 'የለን / መደበኛ ትምህርቲ ኣይተኸታተልኩን',
+    edu_primary: 'መባእታዊ ደረጃ (1-8 ክፍሊ)',
+    edu_secondary: 'ካልኣይ ደረጃ (9-12 ክፍሊ)',
+    edu_tvet: 'ናይ ሞያን ተክኒክን ስልጠና (TVET)',
+    edu_diploma: 'ዲፕሎማ',
+    edu_bachelor: 'ናይ መጀመርታ ዲግሪ (BA/BSc)',
+    edu_masters: 'ማስተርስ ዲግሪ (MA/MSc)',
+    edu_phd: 'ዶክትሬት (PhD)',
+    edu_other: 'ካልእ',
     lbl_bio: 'ብዛዕባ ስራሕኩም ሓጺር መግለጺ',
     lbl_bio_sub: 'እንታይ ዓይነት ስራሕቲ ብግቡእ ከም እትሰርሑ ግለጹ',
     lbl_photo: 'ፎቶ ፕሮፋይል',
     lbl_photo_add: 'ፎቶ ወስኹ',
     lbl_photo_hint: 'ገጽኩም ብንጹር ዝረአየሉ ፎቶ ስቐሉ',
+    lbl_cv: 'CV ወይ ፖርትፎሊዮ (ኣማራጺ)',
+    lbl_cv_add: 'ፋይል ስቐሉ',
+    lbl_cv_hint: 'PDF, Word ወይ ስእሊ (ትሕቲ 5MB)',
+    btn_view_cv: '📄 ፋይል ርአዩ',
     lbl_id: 'ናይ መንነት ፎቶ (ሃገራዊ መንነት ወይ ናይ ቀበሌ መንነት)',
     lbl_id_front: 'ገጽ ቅድሚት',
     lbl_id_back: 'ገጽ ድሕሪት',
@@ -2140,7 +2231,9 @@ async function uploadDataUrlToCloudinary(dataUrl, folder){
   form.append('timestamp', sig.timestamp);
   form.append('signature', sig.signature);
   form.append('folder', sig.folder);
-  const resourceType = blob.type && blob.type.startsWith('video/') ? 'video' : 'image';
+  const resourceType = blob.type && blob.type.startsWith('video/') ? 'video'
+    : (blob.type && blob.type.startsWith('image/')) ? 'image'
+    : 'raw';
   const uploadRes = await fetch(`https://api.cloudinary.com/v1_1/${sig.cloudName}/${resourceType}/upload`, {
     method: 'POST',
     body: form
@@ -2867,10 +2960,28 @@ function escapeHtml(s){
 const idFrontInput = document.getElementById('f-id-front');
 const idBackInput = document.getElementById('f-id-back');
 const photoInput = document.getElementById('f-photo');
-let idFrontData = null, idBackData = null, profilePhotoData = null;
+const cvInput = document.getElementById('f-cv');
+let idFrontData = null, idBackData = null, profilePhotoData = null, cvFileData = null;
 
 idFrontInput.addEventListener('change', e=> handleFile(e,'front'));
 idBackInput.addEventListener('change', e=> handleFile(e,'back'));
+cvInput.addEventListener('change', e=>{
+  const file = e.target.files[0];
+  if(!file) return;
+  if(file.size > 5 * 1024 * 1024){
+    showToast('⚠️ ፋይሉ ከ5MB በላይ ነው — እባክዎ ትንሽ ፋይል ይምረጡ');
+    e.target.value = '';
+    return;
+  }
+  const reader = new FileReader();
+  reader.onload = () => {
+    cvFileData = reader.result;
+    const nameEl = document.getElementById('cv-filename');
+    nameEl.textContent = '📄 ' + file.name;
+    nameEl.style.display = 'block';
+  };
+  reader.readAsDataURL(file);
+});
 photoInput.addEventListener('change', e=>{
   const file = e.target.files[0];
   if(!file) return;
@@ -2942,6 +3053,7 @@ document.getElementById('reg-form').addEventListener('submit', async function(e)
     category: document.getElementById('f-category').value,
     categoryOther: document.getElementById('f-category-other').value.trim(),
     experience: document.getElementById('f-experience').value.trim(),
+    education: document.getElementById('f-education').value,
     bio: document.getElementById('f-bio').value.trim(),
     status: 'pending',
     ratings: []
@@ -2955,14 +3067,16 @@ document.getElementById('reg-form').addEventListener('submit', async function(e)
   submitBtn.disabled = true;
   try{
     // ፎቶዎቹን (ካሉ) መጀመሪያ ወደ Cloudinary ይሰቅላል፣ ከዚያ ወደ backend (MongoDB) ይመዘግባል
-    const [photoUrl, idFrontUrl, idBackUrl] = await Promise.all([
+    const [photoUrl, idFrontUrl, idBackUrl, cvUrl] = await Promise.all([
       uploadDataUrlToCloudinary(profilePhotoData, 'tadu/profiles'),
       uploadDataUrlToCloudinary(idFrontData, 'tadu/ids'),
       uploadDataUrlToCloudinary(idBackData, 'tadu/ids'),
+      uploadDataUrlToCloudinary(cvFileData, 'tadu/cvs'),
     ]);
     w.photo = photoUrl;
     w.idFront = idFrontUrl;
     w.idBack = idBackUrl;
+    w.cv = cvUrl;
 
     await addWorkerRecord(w);
 
@@ -2972,7 +3086,9 @@ document.getElementById('reg-form').addEventListener('submit', async function(e)
     document.getElementById('prev-back').style.display='none';
     document.getElementById('prev-photo').style.display='none';
     document.getElementById('photo-placeholder-icon').style.display='inline';
-    idFrontData = null; idBackData = null; profilePhotoData = null;
+    document.getElementById('cv-filename').style.display='none';
+    document.getElementById('cv-filename').textContent='';
+    idFrontData = null; idBackData = null; profilePhotoData = null; cvFileData = null;
     renderHomeStats();
     showToast(TRANSLATIONS[currentLang].msg_toast_reg);
   }catch(err){
@@ -3016,6 +3132,22 @@ function openModal(id){
   document.getElementById('m-phone').textContent = '📞 ' + w.phone;
   document.getElementById('m-bio').textContent = w.bio || '...';
   document.getElementById('m-call').href = 'tel:' + w.phone;
+
+  const eduWrap = document.getElementById('m-education-wrap');
+  if(w.education && w.education !== 'none'){
+    eduWrap.style.display = 'block';
+    document.getElementById('m-education').textContent = TRANSLATIONS[currentLang]['edu_' + w.education] || w.education;
+  } else {
+    eduWrap.style.display = 'none';
+  }
+
+  const cvWrap = document.getElementById('m-cv-wrap');
+  if(w.cv){
+    cvWrap.style.display = 'block';
+    document.getElementById('m-cv-link').href = w.cv;
+  } else {
+    cvWrap.style.display = 'none';
+  }
 
   // Admin-only: full ID documents
   const admin = isAdminAuthed();
