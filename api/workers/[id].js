@@ -12,7 +12,7 @@ function toClient(doc) {
 // አድሚን እንዲቀይራቸው የተፈቀዱ መስኮች ብቻ - ሌላ ማንኛውም መስክ (ለምሳሌ _id) ችላ ይባላል
 const PATCHABLE_FIELDS = [
   'status', 'ratings', 'name', 'phone', 'address', 'category', 'categoryOther',
-  'experience', 'bio', 'photo', 'idFront', 'idBack',
+  'experience', 'education', 'bio', 'photo', 'idFront', 'idBack', 'cv',
 ];
 
 // ያለ admin ማረጋገጫ (login) ማንኛውም ተጠቃሚ ራሱ ማድረግ የሚችለው ብቸኛ ለውጥ "ደረጃ መስጠት" ብቻ ነው።

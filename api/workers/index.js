@@ -60,10 +60,14 @@ module.exports = async (req, res) => {
         // ችላ ተብሎ አልተቀመጠም ነበር፣ ስለዚህ dashboard ላይ ሁልጊዜ "ሌላ" ብቻ ይታይ ነበር)
         categoryOther: body.categoryOther ? String(body.categoryOther).trim() : '',
         experience: String(body.experience).trim(),
+        // education: frontend ላይ (f-education) ተጨምሮ ነበር፣ ግን እዚህ ችላ ተብሎ
+        // ስላልተቀመጠ ስለ ተመዝጋቢው የትምህርት ደረጃ መረጃ ጠፍቶ ነበር (ፈጽሞ ወደ database አይገባም ነበር)
+        education: body.education ? String(body.education).trim() : 'none',
         bio: body.bio ? String(body.bio).trim() : '',
         photo: body.photo || null,     // Cloudinary secure_url
         idFront: body.idFront || null, // Cloudinary secure_url
         idBack: body.idBack || null,   // Cloudinary secure_url
+        cv: body.cv || null,           // Cloudinary secure_url (CV/ፖርትፎሊዮ) — ይሄም ችላ ተብሎ ነበር
         status: 'pending',
         ratings: [],
         createdAt: now,
