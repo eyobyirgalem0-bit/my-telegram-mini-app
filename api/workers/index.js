@@ -31,14 +31,24 @@ module.exports = async (req, res) => {
       // A verified Telegram worker can also see their own pending/rejected profile
       // so they can update their photo or CV without exposing it to the public.
       if (!isAdmin) {
+        let ownTelegramId = null;
         try {
           const telegramUser = requireTelegramUser(req);
-          if (telegramUser && telegramUser.id) {
-            const own = await col.findOne({ telegramId: String(telegramUser.id) });
-            if (own && !docs.some((doc) => doc._id.equals(own._id))) docs.unshift(own);
-          }
+          if (telegramUser && telegramUser.id) ownTelegramId = String(telegramUser.id);
         } catch (e) {
           // Public browsing remains available when no Telegram session is present.
+        }
+        // TELEGRAM_BOT_TOKEN ገና ካልተዘጋጀ (setup/testing ደረጃ ላይ)፣ requireTelegramUser
+        // ማረጋገጫውን ይዘላል (null ይመልሳል) እንጂ አይወድቅም - በዚያ ሁኔታ ደንበኛው (client) ራሱ
+        // በ ?telegramId= query param የላከውን (ካልተረጋገጠ ግን Mini App initData ላይ
+        // ካለው) telegramId እንደ fallback እንጠቀማለን፣ አለበለዚያ "መገለጫዬን አስተካክል" ገጹ
+        // ቦት ቶክኑ እስኪዘጋጅ ድረስ የራሱን ተመዝጋቢ በጭራሽ ማግኘት አይችልም ነበር።
+        if (!ownTelegramId && req.query && req.query.telegramId) {
+          ownTelegramId = String(req.query.telegramId).trim().slice(0, 64);
+        }
+        if (ownTelegramId) {
+          const own = await col.findOne({ telegramId: ownTelegramId });
+          if (own && !docs.some((doc) => doc._id.equals(own._id))) docs.unshift(own);
         }
       }
       res.status(200).json(docs.map(toClient));
@@ -82,7 +92,14 @@ module.exports = async (req, res) => {
         idFront: body.idFront || null, // Cloudinary secure_url
         idBack: body.idBack || null,   // Cloudinary secure_url
         cv: body.cv || null,           // Cloudinary secure_url (CV/ፖርትፎሊዮ)
-        telegramId: telegramUser && telegramUser.id ? String(telegramUser.id) : null,
+        // TELEGRAM_BOT_TOKEN ተዘጋጅቶ ከሆነ (secure): ሁልጊዜ server-side የተረጋገጠውን
+        // ID ብቻ እንጠቀማለን። ገና ካልተዘጋጀ ግን (verification ስለሚዘለል telegramUser
+        // null ይሆናል)፣ ደንበኛው (client) ከ Telegram Mini App initData ራሱ የላከውን
+        // body.telegramId እንደ fallback እንቀበላለን፣ አለበለዚያ ተመዝጋቢዎች telegramId
+        // ፈጽሞ ስለማይቀመጥላቸው "መገለጫዬን አስተካክል" ገጹ ላይ ሁልጊዜ "አልተገኘም" ይል ነበር።
+        telegramId: telegramUser && telegramUser.id
+          ? String(telegramUser.id)
+          : (body.telegramId ? String(body.telegramId).trim().slice(0, 64) : null),
         status: 'pending',
         ratings: [],
         createdAt: now,
