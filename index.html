@@ -583,6 +583,7 @@
         <button class="navbtn" data-view="browse" data-t="nav_browse">ሰራተኛ ፈልግ</button>
         <button class="navbtn" data-view="categories" data-t="nav_categories">የስራ ዘርፎች</button>
         <button class="navbtn" data-view="register" data-t="nav_register">ሰራተኛ ይመዝገቡ</button>
+        <button class="navbtn" data-view="edit-profile" data-t="nav_edit_profile">መገለጫዬን አስተካክል</button>
       </nav>
       <div class="lang-switcher">
         <button class="lang-btn active" onclick="switchLanguage('am')">አማ</button>
@@ -852,7 +853,59 @@
     </div>
   </section>
 
-  <!-- ============ ADMIN VIEW ============ -->
+  <!-- ============ EDIT PROFILE VIEW ============ -->
+  <section class="view" id="view-edit-profile">
+    <div class="panel">
+      <h2 data-t="ep_title">መገለጫዬን አስተካክል</h2>
+      <p class="hint" data-t="ep_hint">የፕሮፋይል ፎቶዎን እና CV/ፖርትፎሊዮዎን ማዘመን ይችላሉ። (ደህንነት ሲባል ስም፣ ስልክ፣ አድራሻ እና መታወቂያ ፎቶ ከተመዘገቡ በኋላ በራስዎ ሊቀየሩ አይችሉም — መቀየር ካስፈለገ ወደ አስተዳዳሪ ያነጋግሩ።)</p>
+
+      <div id="ep-loading-wrap">
+        <p class="hint" data-t="ep_loading">በመፈለግ ላይ...</p>
+      </div>
+
+      <div id="ep-notfound-wrap" style="display:none;">
+        <div class="form-msg err" data-t="ep_not_found_msg">⚠️ በዚህ ቴሌግራም አካውንት የተመዘገበ መገለጫ አልተገኘም። መጀመሪያ ይመዝገቡ፣ ወይም ይህን ገጽ ከቴሌግራም Mini App ውስጥ ብቻ ይክፈቱ።</div>
+        <button type="button" class="btn btn-primary btn-block" data-view="register" data-t="btn_register_as">እንደ ሰራተኛ ተመዝገብ</button>
+      </div>
+
+      <form id="ep-form" style="display:none;">
+        <div id="ep-msg"></div>
+
+        <div class="ep-readonly-block" style="background:var(--bg-soft,#f3f3f7); border-radius:12px; padding:14px; margin-bottom:18px;">
+          <p style="margin:0 0 6px; font-weight:700;" id="ep-ro-name"></p>
+          <p style="margin:0 0 6px; font-size:13.5px;" id="ep-ro-role"></p>
+          <p style="margin:0 0 6px; font-size:13.5px;" id="ep-ro-contact"></p>
+          <p style="margin:0; font-size:13px; color:var(--muted,#777);" data-t="ep_readonly_hint">🔒 ከላይ ያለው መረጃ ደህንነት ሲባል በራስዎ ሊቀየር አይችልም። ማስተካከል ካስፈለገ ወደ አስተዳዳሪ ያነጋግሩ።</p>
+        </div>
+
+        <div class="field">
+          <label data-t="lbl_photo">የፕሮፋይል ፎቶ</label>
+          <label class="uploader photo-uploader" id="ep-up-photo">
+            <input type="file" accept="image/*" id="ep-photo">
+            <div class="photo-preview-circle" id="ep-photo-preview-circle">
+              <span id="ep-photo-placeholder-icon">📷</span>
+              <img id="ep-prev-photo" style="display:none">
+            </div>
+            <div class="u-label"><span data-t="lbl_photo_add">ፎቶ ይጨምሩ</span> ➕</div>
+          </label>
+        </div>
+
+        <div class="field">
+          <label data-t="lbl_cv">CV ወይም ፖርትፎሊዮ (አማራጭ)</label>
+          <label class="uploader" id="ep-up-cv">
+            <input type="file" accept=".pdf,.doc,.docx,image/*" id="ep-cv">
+            <div class="u-label"><span data-t="lbl_cv_add">ፋይል ይጫኑ</span> ➕</div>
+            <div class="u-sub" data-t="lbl_cv_hint">PDF፣ Word ወይም ምስል (ከ5MB በታች)</div>
+            <div id="ep-cv-filename" style="display:none; margin-top:8px; font-weight:700; color:var(--indigo);"></div>
+          </label>
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-block" id="btn-submit-ep" data-t="btn_save_profile">አስቀምጥ</button>
+      </form>
+    </div>
+  </section>
+
+
   <section class="view" id="view-admin">
     <div id="admin-login-wrap">
       <div class="panel" style="max-width:420px;">
@@ -1010,7 +1063,7 @@
     <div class="modal-head">
       <div class="avatar" id="m-avatar"></div>
       <div>
-        <h3 id="m-name"></h3>
+        <h3 style="display:flex;align-items:center;gap:8px;"><span id="m-name"></span><span id="m-verified-badge" style="display:none;"></span></h3>
         <div class="role" id="m-role"></div>
       </div>
     </div>
@@ -1129,13 +1182,14 @@ const TRANSLATIONS = {
     nav_browse: 'ሰራተኛ ፈልግ',
     nav_categories: 'የስራ ዘርፎች',
     nav_register: 'ሰራተኛ ይመዝገቡ',
+    nav_edit_profile: 'መገለጫዬን አስተካክል',
     nav_admin: '🔧 አስተዳዳሪ',
     hero_title: 'ጥገና ወይም ሰራተኛ ሲያስፈልግዎ፣ <em>ቀልጣፋና ብቃት ያለው</em> ሰው ብቻ ይጥሩ።',
     hero_lede: 'ታዱ ስራ ፈላጊዎችን የሙሉ መረጃቸውን፣ የስራ ልምዳቸውን እና መታወቂያቸውን አረጋግጦ ከቀጣሪዎች ጋር ያገናኛል። ከዚህ በፊት የቀጠሯቸው ሰዎች የሰጡትን ደረጃ (ሬቲንግ) አይተው በእርግጠኝነት ይምረጡ።',
     btn_find_worker: 'ሰራተኛ ፈልግ →',
     btn_register_as: 'እንደ ሰራተኛ ተመዝገብ',
     stat_registered: 'የተመዘገቡ ሰራተኞች',
-    stat_verified: 'የተረጋገጠ መታወቂያ ያላቸው',
+    stat_verified: 'የተረጋገጡ ተመዝጋቢዎች',
     stat_categories: 'የስራ ዘርፎች',
     cat_title: 'ታዱ የሚያካትታቸው የስራ ዘርፎች',
     cat_subtitle: 'ከ100+ በላይ የስራ ዘርፎች መርጠው ስራ ፈላጊ ማግኘት ይችላሉ',
@@ -1191,6 +1245,19 @@ const TRANSLATIONS = {
     placeholder_bio: 'ለምሳሌ፡ የቧንቧ ፍሳሽ ጥገና፣ የውሃ ማሞቂያ ተከላ...',
     privacy_note: 'እዚህ ላይ የምታስገቡት ማስረጃ ደህንነቱ የተረጋገጠነው🔒',
     btn_submit_reg: 'ተመዝገብ',
+    ep_title: 'መገለጫዬን አስተካክል',
+    ep_hint: 'የፕሮፋይል ፎቶዎን እና CV/ፖርትፎሊዮዎን ማዘመን ይችላሉ። (ደህንነት ሲባል ስም፣ ስልክ፣ አድራሻ እና መታወቂያ ፎቶ ከተመዘገቡ በኋላ በራስዎ ሊቀየሩ አይችሉም — መቀየር ካስፈለገ ወደ አስተዳዳሪ ያነጋግሩ።)',
+    ep_loading: 'በመፈለግ ላይ...',
+    ep_not_found_msg: '⚠️ በዚህ ቴሌግራም አካውንት የተመዘገበ መገለጫ አልተገኘም። መጀመሪያ ይመዝገቡ፣ ወይም ይህን ገጽ ከቴሌግራም Mini App ውስጥ ብቻ ይክፈቱ።',
+    ep_readonly_hint: '🔒 ከላይ ያለው መረጃ ደህንነት ሲባል በራስዎ ሊቀየር አይችልም። ማስተካከል ካስፈለገ ወደ አስተዳዳሪ ያነጋግሩ።',
+    ep_nothing_changed: '⚠️ እባክዎ አዲስ ፎቶ ወይም CV ይምረጡ',
+    btn_find_profile: 'መገለጫዬን ፈልግ',
+    msg_enter_phone: '⚠️ እባክዎ ስልክ ቁጥር ያስገቡ',
+    msg_profile_not_found: '⚠️ በዚህ ስልክ ቁጥር የተመዘገበ ሰው አልተገኘም',
+    ep_existing_file: 'ነባር ፋይል ተያይዟል',
+    ep_id_locked_hint: '🔒 የመታወቂያ ፎቶ ደህንነት ሲባል ከተመዘገበ በኋላ ሊቀየር አይችልም። መቀየር ካስፈለገ ወደ አስተዳዳሪ ያነጋግሩ።',
+    btn_save_profile: 'አስቀምጥ',
+    msg_profile_updated: '✅ መገለጫዎ ተስተካክሏል',
     admin_login_title: '🔧 የአስተዳዳሪ መግቢያ',
     admin_login_hint: 'የተመዘገቡ ሰራተኞችን ለማየት እና ለማጽደቅ የይለፍ ቃል ያስገቡ።',
     lbl_password: 'የይለፍ ቃል (Password)',
@@ -1210,6 +1277,8 @@ const TRANSLATIONS = {
     admin_th_actions: 'ተግብር',
     btn_approve: 'አጽድቅ',
     btn_reject: 'ከልክል',
+    btn_grant_verify: 'ቬሪፊኬሽን ስጥ',
+    btn_revoke_verify: 'ቬሪፊኬሽን አጥፋ',
     btn_delete: 'አጥፋ',
     admin_empty: 'ምንም ተመዝጋቢ በዚህ ማጣሪያ የለም።',
     admin_search_placeholder: 'በስም ወይም በስልክ ይፈልጉ...',
@@ -1242,6 +1311,8 @@ const TRANSLATIONS = {
     msg_deleted: 'ተመዝጋቢው ተሰርዟል',
     msg_approved: 'ጸድቋል ✅',
     msg_rejected: 'ተከልክሏል ❌',
+    msg_verified_granted: 'ቬሪፊኬሽን ተሰጥቷል ✅',
+    msg_verified_revoked: 'ቬሪፊኬሽን ተነስቷል',
     msg_logged_out: 'ወጥ   ዋል',
     no_id_uploaded: 'አልተሰቀለም',
     footer_text: '© 2026 ታዱ (Tadu) - ታዱ — ስራ እና ሰራተኛ ማገናኛ።',
@@ -1256,13 +1327,14 @@ const TRANSLATIONS = {
     nav_browse: 'Hojjetaa Barbaadi',
     nav_categories: 'Gosoota Hojii',
     nav_register: 'Hojjetaa Galmeessi',
+    nav_edit_profile: 'Piroofaayilii Koo Gulaali',
     nav_admin: '🔧 Bulchaa',
     hero_title: 'Yeroo suphaan ykn hojiin isin barbaachisu, nama <em>eenyummaan isaa mirkanaa’e</em> qofa waamaa.',
     hero_lede: 'Taduun hojii barbaaddota odeeffannoo guutuu, muuxannoo hojii fi fakkii waraqaa eenyummaa isaanii mirkaneessuun qacartoota waliin walitti hidha. Sadarkaa (rating) namoonni kanaan dura qacaran kennan ilaaluun amanannaan filadha.',
     btn_find_worker: 'Hojjetaa Barbaadi →',
     btn_register_as: 'Hojjetaa ta’ii galmee',
     stat_registered: 'Hojjettoota Galmaayan',
-    stat_verified: 'Waraqaa Eenyummaa Mirkanaa’e',
+    stat_verified: 'Galmaayoota Mirkanaa’aman',
     stat_categories: 'Gosoota Hojii',
     cat_title: 'Gosoota Hojii Taduun Hammatu',
     cat_subtitle: 'Gosoota hojii 100+ ol keessaa filachuun hojjetaa argachuu dandeessu',
@@ -1318,6 +1390,19 @@ const TRANSLATIONS = {
     placeholder_bio: 'fkn: Suphaa ujummoo bishaanii, hidhaa ho’iftuu bishaanii...',
     privacy_note: '🔒 Kun mudillee (demo) waan ta’eef fakkii waraqaa eenyummaa keessanii meeshaa kana qofa irratti (browser storage) kaayama; gara biraatti hin ergamu.',
     btn_submit_reg: 'Galmaa’i',
+    ep_title: 'Piroofaayilii Koo Gulaali',
+    ep_hint: 'Suura piroofaayilii keessanii fi CV/Poortifooliyoo keessan haaromsuu ni dandeessu. (Nageenyaaf jecha maqaa, bilbila, teessoo fi waraqaa eenyummaa erga galmaa’ee booda ofiin jijjiiruu hin dandeessan — yoo jijjiiramuu qabaate bulchaa quunnamaa.)',
+    ep_loading: 'Barbaacha irra jira...',
+    ep_not_found_msg: '⚠️ Akkaawuntii Telegram kanaan piroofaayilii galmaa’e hin argamne. Duraan dursaa galmaa’aa, ykn fuula kana Mini App Telegram keessaa qofa banaa.',
+    ep_readonly_hint: '🔒 Odeeffannoon armaan olii nageenyaaf jecha ofiin jijjiiramuu hin danda’u. Yoo jijjiiramuu qabaate bulchaa quunnamaa.',
+    ep_nothing_changed: '⚠️ Maaloo suura haaraa ykn CV filadhaa',
+    btn_find_profile: 'Piroofaayilii Koo Barbaadi',
+    msg_enter_phone: '⚠️ Maaloo lakkoofsa bilbilaa galchaa',
+    msg_profile_not_found: '⚠️ Lakkoofsa bilbilaa kanaan namni galmaa’e hin argamne',
+    ep_existing_file: 'Faayiliin duraanii jira',
+    ep_id_locked_hint: '🔒 Waraqaan eenyummaa sababa nageenyaatiif erga galmaa’ee booda jijjiiramuu hin danda’u. Jijjiiruu yoo barbaachise bulchaa quunnamaa.',
+    btn_save_profile: 'Kuusi',
+    msg_profile_updated: '✅ Piroofaayiliin keessan gulaalameera',
     admin_login_title: '🔧 Seensa Bulchaa',
     admin_login_hint: 'Hojjettoota galmaayan ilaaluu fi mirkaneessuuf jecha icciitii (password) galchaa.',
     lbl_password: 'Jecha Icciitii (Password)',
@@ -1337,6 +1422,8 @@ const TRANSLATIONS = {
     admin_th_actions: 'Gocha',
     btn_approve: 'Hayyami',
     btn_reject: 'Didi',
+    btn_grant_verify: 'Mirkaneessi',
+    btn_revoke_verify: 'Mirkana Kaasi',
     btn_delete: 'Haqi',
     admin_empty: 'Calaltuu kanaan hojjetaan galmaaye hin jiru.',
     admin_search_placeholder: 'Maqaa ykn bilbilaan barbaadi...',
@@ -1369,6 +1456,8 @@ const TRANSLATIONS = {
     msg_deleted: 'Hojjetaan haqameera',
     msg_approved: 'Hayyamameera ✅',
     msg_rejected: 'Didameera ❌',
+    msg_verified_granted: 'Mirkanaa’eera ✅',
+    msg_verified_revoked: 'Mirkanni ka’eera',
     msg_logged_out: 'Baataniittu',
     no_id_uploaded: 'Hin fe’amne',
     footer_text: '© 2026 Taaduu (Tadu) - Taaduu — Sagantaa Hojii fi Hojjettoota Walqunnamsiisu.',
@@ -1383,13 +1472,14 @@ const TRANSLATIONS = {
     nav_browse: 'Find Workers',
     nav_categories: 'Job Categories',
     nav_register: 'Register as Worker',
+    nav_edit_profile: 'Edit My Profile',
     nav_admin: '🔧 Admin',
     hero_title: 'When you need repair or work, call only a <em>verified</em> person.',
     hero_lede: 'Tadu verifies job seekers through their full profile, experience, and ID photo before making them visible to employers. Check ratings from past employers and choose with confidence.',
     btn_find_worker: 'Find Worker →',
     btn_register_as: 'Register as Worker',
     stat_registered: 'Registered Workers',
-    stat_verified: 'Verified Identity',
+    stat_verified: 'Verified Members',
     stat_categories: 'Work Categories',
     cat_title: 'Work Categories on Tadu',
     cat_subtitle: 'Choose from 100+ sectors to find professional workers',
@@ -1445,6 +1535,19 @@ const TRANSLATIONS = {
     placeholder_bio: 'e.g., Plumbing repair, water heater installation...',
     privacy_note: '🔒 Since this is a demo prototype, your ID photos are saved locally in your browser storage and never sent to any server.',
     btn_submit_reg: 'Register Now',
+    ep_title: 'Edit My Profile',
+    ep_hint: 'You can update your profile photo and CV/Portfolio. (For security, name, phone, address, and ID photo cannot be changed by you after registration — contact an admin if these need to change.)',
+    ep_loading: 'Looking up your profile...',
+    ep_not_found_msg: '⚠️ No profile found for this Telegram account. Please register first, or open this page from within the Telegram Mini App.',
+    ep_readonly_hint: '🔒 The information above cannot be changed by you for security. Contact an admin if this needs to change.',
+    ep_nothing_changed: '⚠️ Please choose a new photo or CV first',
+    btn_find_profile: 'Find My Profile',
+    msg_enter_phone: '⚠️ Please enter a phone number',
+    msg_profile_not_found: '⚠️ No profile found with this phone number',
+    ep_existing_file: 'A file is already attached',
+    ep_id_locked_hint: '🔒 For security, ID photos cannot be changed after registration. Contact an admin if this needs to change.',
+    btn_save_profile: 'Save Changes',
+    msg_profile_updated: '✅ Your profile has been updated',
     admin_login_title: '🔧 Admin Login',
     admin_login_hint: 'Enter password to view and moderate registered workers.',
     lbl_password: 'Password',
@@ -1464,6 +1567,8 @@ const TRANSLATIONS = {
     admin_th_actions: 'Actions',
     btn_approve: 'Approve',
     btn_reject: 'Reject',
+    btn_grant_verify: 'Grant Verification',
+    btn_revoke_verify: 'Revoke Verification',
     btn_delete: 'Delete',
     admin_empty: 'No applications found in this filter.',
     admin_search_placeholder: 'Search by name or phone...',
@@ -1496,6 +1601,8 @@ const TRANSLATIONS = {
     msg_deleted: 'Worker deleted successfully',
     msg_approved: 'Approved ✅',
     msg_rejected: 'Rejected ❌',
+    msg_verified_granted: 'Verification granted ✅',
+    msg_verified_revoked: 'Verification revoked',
     msg_logged_out: 'Logged out successfully',
     no_id_uploaded: 'No ID Uploaded',
     footer_text: '© 2026 Tadu - Tadu — Worker & Job Matching Platform.',
@@ -1510,13 +1617,14 @@ const TRANSLATIONS = {
     nav_browse: 'ሰራሕተኛ ድለ',
     nav_categories: 'ዓይነት ስራሕቲ',
     nav_register: 'ሰራሕተኛ ተመዝገብ',
+    nav_edit_profile: 'መግለጺይ ኣመሓይሽ',
     nav_admin: '🔧 ኣመሓዳሪ',
     hero_title: 'ጽገና ወይ ሰራሕተኛ ምስ ዘድልየኩም፣ <em>ብቕዓትን ተኣማንነትን</em> ዘለዎ ሰብ ጥራይ ደውሉ።',
     hero_lede: 'ታዱ ስራሕ ደለይቲ ምሉእ ሓበሬታኦም፣ ተመክሮ ስራሖምን መንነቶምን ኣረጋጊጹ ምስ ኣስራሕቲ የራኽብ። ቅድሚ ሕጂ ዝቖጸርዎም ሰባት ዝሃብዎም ደረጃ ርኢኹም ብምትእምማን ምረጹ።',
     btn_find_worker: 'ሰራሕተኛ ድለ →',
     btn_register_as: 'ከም ሰራሕተኛ ተመዝገብ',
     stat_registered: 'ዝተመዝገቡ ሰራሕተኛታት',
-    stat_verified: 'ዝተረጋገጸ መንነት ዘለዎም',
+    stat_verified: 'ዝተረጋገጹ ተመዝገብቲ',
     stat_categories: 'ዓይነት ስራሕቲ',
     cat_title: 'ታዱ ዘጠቓልሎም ዓይነት ስራሕቲ',
     cat_subtitle: 'ካብ 100+ ዝያዳ ዓይነት ስራሕቲ መሪጽኩም ሰራሕተኛ ክትረኽቡ ትኽእሉ',
@@ -1572,6 +1680,19 @@ const TRANSLATIONS = {
     placeholder_bio: 'ንኣብነት፡ ናይ ማይ ቧንቧ ጽገና፣ ናይ ማይ መውዓዪ ተኸላ...',
     privacy_note: 'ኣብዚ እትእትውዎ መርትዖ ውሕስነቱ ዝተረጋገጸ እዩ🔒',
     btn_submit_reg: 'ተመዝገብ',
+    ep_title: 'መግለጺይ ኣመሓይሽ',
+    ep_hint: 'ፎቶ ፕሮፋይልኩምን CV/ፖርትፎሊዮኩምን ከተመሓይሹ ትኽእሉ ኢኹም። (ብሰንኪ ውሕስነት ስም፣ ተሌፎን፣ ኣድራሻን ናይ መንነት ፎቶን ድሕሪ ምምዝጋቡ ባዕልኹም ክትቕይርዎ ኣይትኽእሉን — ምቕያር እንተድኣ ኣድሊይዎም ንኣመሓዳሪ ርኸቡ።)',
+    ep_loading: 'ኣብ ምድላይ ኣሎ...',
+    ep_not_found_msg: '⚠️ በዚ ናይ ቴለግራም ኣካውንት ዝተመዝገበ መግለጺ ኣይተረኸበን። መጀመርታ ተመዝገቡ፣ ወይ ነዚ ገጽ ካብ ቴለግራም Mini App ውሽጢ ጥራይ ክፈትዎ።',
+    ep_readonly_hint: '🔒 እቲ ኣብ ላዕሊ ዘሎ ሓበሬታ ብሰንኪ ውሕስነት ባዕልኹም ክትቕይርዎ ኣይትኽእሉን። ምቕያር እንተድኣ ኣድሊይዎም ንኣመሓዳሪ ርኸቡ።',
+    ep_nothing_changed: '⚠️ በጃኹም ሓድሽ ፎቶ ወይ CV ምረጹ',
+    btn_find_profile: 'መግለጺይ ድለ',
+    msg_enter_phone: '⚠️ በጃኹም ቁጽሪ ተሌፎን የእትዉ',
+    msg_profile_not_found: '⚠️ በዚ ቁጽሪ ተሌፎን ዝተመዝገበ ሰብ ኣይተረኸበን',
+    ep_existing_file: 'ነባር ፋይል ተታሓሒዙ ኣሎ',
+    ep_id_locked_hint: '🔒 ናይ መንነት ፎቶ ብሰንኪ ውሕስነት ድሕሪ ምምዝጋቡ ክቕየር ኣይክእልን። ምቕያር እንተድኣ ኣድሊይዎም ንኣመሓዳሪ ርኸቡ።',
+    btn_save_profile: 'ኣቐምጥ',
+    msg_profile_updated: '✅ መግለጺኹም ተመሓይሹ',
     admin_login_title: '🔧 መእተዊ ኣመሓዳሪ',
     admin_login_hint: 'ዝተመዝገቡ ሰራሕተኛታት ንምርኣይን ንምጽዳቕን መሕለፊ ቃል ኣእትዉ።',
     lbl_password: 'መሕለፊ ቃል (Password)',
@@ -1591,6 +1712,8 @@ const TRANSLATIONS = {
     admin_th_actions: 'ተግባር',
     btn_approve: 'ኣጽድቕ',
     btn_reject: 'ነጽግ',
+    btn_grant_verify: 'ቬሪፊኬሽን ሃብ',
+    btn_revoke_verify: 'ቬሪፊኬሽን ኣልግስ',
     btn_delete: 'ደምስስ',
     admin_empty: 'ኣብዚ ምጽራይ እዚ ዋላ ሓደ ተመዝጋቢ የለን።',
     admin_search_placeholder: 'ብስም ወይ ብተሌፎን ድለዩ...',
@@ -1623,6 +1746,8 @@ const TRANSLATIONS = {
     msg_deleted: 'ተመዝጋቢ ተደምሲሱ',
     msg_approved: 'ጸዲቑ ✅',
     msg_rejected: 'ተነጺጉ ❌',
+    msg_verified_granted: 'ቬሪፊኬሽን ተዋሂቡ ✅',
+    msg_verified_revoked: 'ቬሪፊኬሽን ተኣልጊሱ',
     msg_logged_out: 'ወጺእኩም',
     no_id_uploaded: 'ኣይተሰቕለን',
     footer_text: '© 2026 ታዱ (Tadu) - ታዱ — ስራሕን ሰራሕተኛን ዘራኽብ።',
@@ -2792,7 +2917,7 @@ function switchLanguage(lang) {
 }
 
 /* ================= view routing ================= */
-const views = ['home','browse','categories','register','admin'];
+const views = ['home','browse','categories','register','edit-profile','admin'];
 function showView(v){
   views.forEach(id=>{
     document.getElementById('view-'+id).classList.toggle('show', id===v);
@@ -2802,6 +2927,7 @@ function showView(v){
   });
   if(v==='browse'){ renderActiveFilterPill(); renderGrid(); }
   if(v==='home'){ renderHomeStats(); }
+  if(v==='edit-profile'){ if(typeof ep_resetLookup === 'function') ep_resetLookup(); }
   if(v==='admin') refreshAdminView();
   window.scrollTo({top:0,behavior:'smooth'});
 }
@@ -2837,7 +2963,6 @@ function renderCategoryChips(){
 }
 
 function renderFormCategories() {
-  const catSelect = document.getElementById('f-category');
   const groups = CATEGORY_GROUPS[currentLang];
   const byGroup = {};
   CATEGORIES[currentLang].forEach(c=>{
@@ -2845,11 +2970,12 @@ function renderFormCategories() {
     if(!byGroup[g]) byGroup[g] = [];
     byGroup[g].push(c);
   });
-  catSelect.innerHTML = Object.keys(byGroup).map(gid=>{
+  const optionsHtml = Object.keys(byGroup).map(gid=>{
     const label = groups[gid] || gid;
     const opts = byGroup[gid].map(c=>`<option value="${c.id}">${c.label}</option>`).join('');
     return `<optgroup label="${label}">${opts}</optgroup>`;
   }).join('');
+  document.getElementById('f-category').innerHTML = optionsHtml;
 }
 
 function renderActiveFilterPill(){
@@ -2915,7 +3041,7 @@ function renderGrid(){
 
   grid.innerHTML = workers.map(w=>{
     const avg = avgRating(w);
-    const verified = w.idFront && w.idBack;
+    const verified = !!w.verified;
     return `
     <div class="card" data-id="${w.id}">
       <div class="card-top">
@@ -3099,7 +3225,127 @@ document.getElementById('reg-form').addEventListener('submit', async function(e)
   }
 });
 
-/* ================= modal ================= */
+/* ================= edit profile (worker self-service) =================
+   የ backend (api/workers/[id].js) ላይ ያለው SELF_EDITABLE_FIELDS ገደብ
+   ('photo' እና 'cv' ብቻ) ስለሚያስገድድ፣ እዚህም ተመሳሳይ ገደብ እናደርጋለን።
+   ተጠቃሚው ማንነት የሚረጋገጠው በራሱ ስልክ ቁጥር ሳይሆን በ Telegram initData (telegramId)
+   ነው — ስለዚህ ስልክ ቁጥር መጠየቅ ወይም ስም/አድራሻ/ስራ አይነት/ልምድ/ትምህርት/መግለጫ
+   ማስተካከል አንፈቅድም (backend እነዚህን ቢላኩም 403 ይመልሳል)። */
+let epCurrentWorker = null;
+let epPhotoData = null, epCvFileData = null;
+
+document.getElementById('ep-photo').addEventListener('change', e=>{
+  const file = e.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    resizeImageDataUrl(reader.result, 500, 0.82).then(resized=>{
+      epPhotoData = resized;
+      const img = document.getElementById('ep-prev-photo');
+      img.src = resized; img.style.display='block';
+      document.getElementById('ep-photo-placeholder-icon').style.display='none';
+    });
+  };
+  reader.readAsDataURL(file);
+});
+
+document.getElementById('ep-cv').addEventListener('change', e=>{
+  const file = e.target.files[0];
+  if(!file) return;
+  if(file.size > 5*1024*1024){
+    showToast('⚠️ ፋይሉ ከ5MB በላይ ነው');
+    e.target.value = '';
+    return;
+  }
+  const reader = new FileReader();
+  reader.onload = () => {
+    epCvFileData = reader.result;
+    const nameEl = document.getElementById('ep-cv-filename');
+    nameEl.textContent = '📄 ' + file.name;
+    nameEl.style.display = 'block';
+  };
+  reader.readAsDataURL(file);
+});
+
+async function ep_resetLookup(){
+  epCurrentWorker = null;
+  epPhotoData = null; epCvFileData = null;
+  document.getElementById('ep-form').style.display = 'none';
+  document.getElementById('ep-notfound-wrap').style.display = 'none';
+  document.getElementById('ep-loading-wrap').style.display = 'block';
+  document.getElementById('ep-msg').innerHTML = '';
+  document.getElementById('ep-cv-filename').style.display = 'none';
+  document.getElementById('ep-cv-filename').textContent = '';
+  document.getElementById('ep-prev-photo').style.display = 'none';
+  document.getElementById('ep-photo-placeholder-icon').style.display = 'inline';
+
+  const myTelegramId = (tg && tg.initDataUnsafe && tg.initDataUnsafe.user) ? String(tg.initDataUnsafe.user.id) : null;
+
+  if(!myTelegramId){
+    document.getElementById('ep-loading-wrap').style.display = 'none';
+    document.getElementById('ep-notfound-wrap').style.display = 'block';
+    return;
+  }
+
+  await syncWorkersFromServer(); // ወቅታዊውን ውሂብ ማምጣት (የራስ pending/rejected መገለጫንም ያካትታል)
+  const match = loadWorkers().find(w => w.telegramId && String(w.telegramId) === myTelegramId);
+
+  document.getElementById('ep-loading-wrap').style.display = 'none';
+
+  if(!match){
+    document.getElementById('ep-notfound-wrap').style.display = 'block';
+    return;
+  }
+
+  epCurrentWorker = match;
+  document.getElementById('ep-ro-name').textContent = match.name || '';
+  document.getElementById('ep-ro-role').textContent = workerCategoryLabel(match) + ' · ' + (match.experience || '');
+  document.getElementById('ep-ro-contact').textContent = (match.phone || '') + ' · ' + (match.address || '');
+  if(match.photo){
+    document.getElementById('ep-prev-photo').src = match.photo;
+    document.getElementById('ep-prev-photo').style.display = 'block';
+    document.getElementById('ep-photo-placeholder-icon').style.display = 'none';
+  }
+  if(match.cv){
+    document.getElementById('ep-cv-filename').textContent = '📄 ' + TRANSLATIONS[currentLang].ep_existing_file;
+    document.getElementById('ep-cv-filename').style.display = 'block';
+  }
+  document.getElementById('ep-form').style.display = 'block';
+}
+
+document.getElementById('ep-form').addEventListener('submit', async function(e){
+  e.preventDefault();
+  if(!epCurrentWorker) return;
+  const msg = document.getElementById('ep-msg');
+  const submitBtn = document.getElementById('btn-submit-ep');
+
+  // ገደብ: backend 'photo' እና 'cv' ብቻ ነው ከ non-admin (Telegram) ተጠቃሚ የሚቀበለው
+  const patch = {};
+
+  if(!epPhotoData && !epCvFileData){
+    msg.innerHTML = `<div class="form-msg err">${TRANSLATIONS[currentLang].ep_nothing_changed}</div>`;
+    return;
+  }
+
+  submitBtn.disabled = true;
+  try{
+    if(epPhotoData) patch.photo = await uploadDataUrlToCloudinary(epPhotoData, 'tadu/profiles');
+    if(epCvFileData) patch.cv = await uploadDataUrlToCloudinary(epCvFileData, 'tadu/cvs');
+
+    await updateWorkerRecord(epCurrentWorker.id, patch);
+
+    msg.innerHTML = `<div class="form-msg ok">${TRANSLATIONS[currentLang].msg_profile_updated}</div>`;
+    showToast(TRANSLATIONS[currentLang].msg_profile_updated);
+    renderHomeStats();
+  }catch(err){
+    console.error('Profile update failed:', err);
+    msg.innerHTML = `<div class="form-msg err">⚠️ ${err.message || 'Save failed — please try again.'}</div>`;
+  }finally{
+    submitBtn.disabled = false;
+  }
+});
+
+
 let currentWorkerId = null;
 
 // እያንዳንዱ ብራውዘር/መሳሪያ ለአንድ ሰራተኛ አንድ ጊዜ ብቻ ደረጃ እንዲሰጥ ለመገደብ
@@ -3124,6 +3370,9 @@ function openModal(id){
   const mAvatar = document.getElementById('m-avatar');
   mAvatar.innerHTML = w.photo ? `<img class="avatar-photo" src="${w.photo}" alt="${escapeHtml(w.name)}">` : initials(w.name);
   document.getElementById('m-name').textContent = w.name;
+  const mBadge = document.getElementById('m-verified-badge');
+  if(w.verified){ mBadge.style.display='inline-flex'; mBadge.innerHTML = verifiedBadgeSvg(); }
+  else { mBadge.style.display='none'; mBadge.innerHTML = ''; }
   document.getElementById('m-role').textContent = catLabelFor(w);
   const avg = avgRating(w);
   document.getElementById('m-stars').textContent = starString(avg);
@@ -3252,7 +3501,7 @@ document.getElementById('m-rate-submit').addEventListener('click', async ()=>{
 function renderHomeStats(){
   const workers = loadWorkers();
   document.getElementById('stat-workers').textContent = workers.length;
-  document.getElementById('stat-verified').textContent = workers.filter(w=>w.idFront && w.idBack).length;
+  document.getElementById('stat-verified').textContent = workers.filter(w=>w.verified).length;
   document.getElementById('stat-categories').textContent = CATEGORIES[currentLang].length;
 }
 let toastTimer;
@@ -3461,6 +3710,7 @@ function renderAdminTable(){
                 <button class="a-view" data-act="view" data-id="${w.id}">👁 ${TRANSLATIONS[currentLang].btn_view_detail}</button>
                 <button class="a-approve" data-act="approve" data-id="${w.id}">${TRANSLATIONS[currentLang].btn_approve}</button>
                 <button class="a-reject" data-act="reject" data-id="${w.id}">${TRANSLATIONS[currentLang].btn_reject}</button>
+                <button class="${w.verified ? 'a-reject' : 'a-approve'}" data-act="toggle-verify" data-id="${w.id}">${w.verified ? '🚫 '+TRANSLATIONS[currentLang].btn_revoke_verify : '✅ '+TRANSLATIONS[currentLang].btn_grant_verify}</button>
                 <button class="a-delete" data-act="delete" data-id="${w.id}">${TRANSLATIONS[currentLang].btn_delete}</button>
               </div>
             </td>
@@ -3531,6 +3781,11 @@ async function handleAdminAction(act, id){
     } else if(act==='reject'){
       await updateWorkerRecord(id, {status:'rejected'});
       showToast(TRANSLATIONS[currentLang].msg_rejected);
+    } else if(act==='toggle-verify'){
+      const w = workers.find(x=>x.id===id);
+      const newVal = !w.verified;
+      await updateWorkerRecord(id, {verified: newVal});
+      showToast(newVal ? TRANSLATIONS[currentLang].msg_verified_granted : TRANSLATIONS[currentLang].msg_verified_revoked);
     }
   }catch(err){
     console.error('Admin action failed:', err);
