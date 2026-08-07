@@ -27,7 +27,20 @@ module.exports = async (req, res) => {
         isAdmin = false; // no/invalid token → treat as public request
       }
       const query = isAdmin ? {} : { status: 'approved' };
-      const docs = await col.find(query).sort({ createdAt: -1 }).toArray();
+      let docs = await col.find(query).sort({ createdAt: -1 }).toArray();
+      // A verified Telegram worker can also see their own pending/rejected profile
+      // so they can update their photo or CV without exposing it to the public.
+      if (!isAdmin) {
+        try {
+          const telegramUser = requireTelegramUser(req);
+          if (telegramUser && telegramUser.id) {
+            const own = await col.findOne({ telegramId: String(telegramUser.id) });
+            if (own && !docs.some((doc) => doc._id.equals(own._id))) docs.unshift(own);
+          }
+        } catch (e) {
+          // Public browsing remains available when no Telegram session is present.
+        }
+      }
       res.status(200).json(docs.map(toClient));
       return;
     }
@@ -37,8 +50,9 @@ module.exports = async (req, res) => {
       // (ይህ ማንም ሰው በቀጥታ API ጠርቶ የሀሰት ተመዝጋቢ እንዳይፈጥር ይከላከላል)
       // ማስታወሻ፦ requireTelegramUser በትክክል function ሆኖ ካልመጣ (ለምሳሌ የቆየ/ያልተስተካከለ
       // deploy በተሳሳተ ሁኔታ ቢሰቀል) ምዝገባው ሙሉ በሙሉ እንዳይወድቅ (500 error) በዚህ እንጠብቀዋለን።
+      let telegramUser = null;
       if (typeof requireTelegramUser === 'function') {
-        requireTelegramUser(req);
+        telegramUser = requireTelegramUser(req);
       } else {
         console.warn('requireTelegramUser is not available — skipping Telegram initData verification.');
       }
@@ -67,7 +81,8 @@ module.exports = async (req, res) => {
         photo: body.photo || null,     // Cloudinary secure_url
         idFront: body.idFront || null, // Cloudinary secure_url
         idBack: body.idBack || null,   // Cloudinary secure_url
-        cv: body.cv || null,           // Cloudinary secure_url (CV/ፖርትፎሊዮ) — ይሄም ችላ ተብሎ ነበር
+        cv: body.cv || null,           // Cloudinary secure_url (CV/ፖርትፎሊዮ)
+        telegramId: telegramUser && telegramUser.id ? String(telegramUser.id) : null,
         status: 'pending',
         ratings: [],
         createdAt: now,

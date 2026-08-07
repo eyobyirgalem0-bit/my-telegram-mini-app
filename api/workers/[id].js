@@ -3,6 +3,7 @@
 const { ObjectId } = require('mongodb');
 const { getDb } = require('../../lib/db');
 const { requireAdmin, handlePreflight, sendError } = require('../../lib/auth');
+const { requireTelegramUser } = require('../../lib/telegram');
 
 function toClient(doc) {
   const { _id, ...rest } = doc;
@@ -12,13 +13,14 @@ function toClient(doc) {
 // አድሚን እንዲቀይራቸው የተፈቀዱ መስኮች ብቻ - ሌላ ማንኛውም መስክ (ለምሳሌ _id) ችላ ይባላል
 const PATCHABLE_FIELDS = [
   'status', 'ratings', 'name', 'phone', 'address', 'category', 'categoryOther',
-  'experience', 'education', 'bio', 'photo', 'idFront', 'idBack', 'cv',
+  'experience', 'education', 'bio', 'photo', 'idFront', 'idBack', 'cv', 'telegramId',
 ];
 
 // ያለ admin ማረጋገጫ (login) ማንኛውም ተጠቃሚ ራሱ ማድረግ የሚችለው ብቸኛ ለውጥ "ደረጃ መስጠት" ብቻ ነው።
 // ስለዚህ PATCH ጥያቄው ከ 'ratings' ውጭ ሌላ ማንኛውም field ካካተተ (ወይም ratings ካልያዘ)፣
 // አሁንም እንደ በፊቱ admin token ይጠየቃል።
 const PUBLIC_RATING_ONLY_FIELD = 'ratings';
+const SELF_EDITABLE_FIELDS = ['photo', 'cv'];
 
 // ተጠቃሚው የላከውን አንድ አዲስ ደረጃ (rating) ወደ ንጹህ/አስተማማኝ ቅርጽ ይመልሰዋል፣ ያልተጠበቁ
 // ወይም አደገኛ ሊሆኑ የሚችሉ ተጨማሪ መስኮችን ችላ በማለት። ትክክል ካልሆነ throw ያደርጋል።
@@ -83,18 +85,48 @@ module.exports = async (req, res) => {
         return;
       }
 
-      // ከ ratings-only ውጭ ማንኛውም ለውጥ (status, name, phone, ID ፎቶ ወዘተ) አሁንም
-      // admin token ይጠይቃል።
-      requireAdmin(req);
+      // Admins may edit every approved field. Workers may edit only their own
+      // profile photo and CV, and only from a verified Telegram Mini App session.
+      let isAdmin = true;
+      try {
+        requireAdmin(req);
+      } catch (adminError) {
+        isAdmin = false;
+      }
 
       const patch = {};
-      for (const field of PATCHABLE_FIELDS) {
-        if (Object.prototype.hasOwnProperty.call(body, field)) {
-          patch[field] = body[field];
+      const requestedFields = PATCHABLE_FIELDS.filter((field) =>
+        Object.prototype.hasOwnProperty.call(body, field)
+      );
+      if (!isAdmin) {
+        const telegramUser = requireTelegramUser(req);
+        if (!telegramUser || !telegramUser.id) {
+          throw Object.assign(new Error('Telegram account could not be verified'), { statusCode: 401 });
+        }
+        const existing = await col.findOne({ _id }, { projection: { telegramId: 1 } });
+        if (!existing || String(existing.telegramId || '') !== String(telegramUser.id)) {
+          throw Object.assign(new Error('You may edit only your own profile'), { statusCode: 403 });
+        }
+        if (!requestedFields.length || requestedFields.some((field) => !SELF_EDITABLE_FIELDS.includes(field))) {
+          throw Object.assign(new Error('Workers may edit only their photo and CV'), { statusCode: 403 });
+        }
+      }
+
+      for (const field of requestedFields) {
+        patch[field] = body[field];
+      }
+      for (const field of ['photo', 'cv']) {
+        if (Object.prototype.hasOwnProperty.call(patch, field) && patch[field] !== null) {
+          patch[field] = String(patch[field]).trim().slice(0, 2000);
         }
       }
       if (patch.status && !['pending', 'approved', 'rejected'].includes(patch.status)) {
         throw Object.assign(new Error('Invalid status value'), { statusCode: 400 });
+      }
+      if (isAdmin && Object.prototype.hasOwnProperty.call(patch, 'telegramId')) {
+        patch.telegramId = patch.telegramId === null || patch.telegramId === ''
+          ? null
+          : String(patch.telegramId).trim().slice(0, 64);
       }
       patch.updatedAt = new Date();
 
